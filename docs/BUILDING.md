@@ -1,6 +1,6 @@
 # Building W2PP
 
-This document describes how to build the W2PP project using CMake.
+This document describes how to build the W2PP project using CMake and vcpkg.
 
 ## Prerequisites
 
@@ -9,6 +9,7 @@ This document describes how to build the W2PP project using CMake.
 - **CMake** 3.15 or higher
 - **Visual Studio 2022** (or 2019) with C++ workload
 - **Windows SDK** (comes with Visual Studio)
+- **vcpkg** - Package manager for C++ libraries
 
 ### Installing Prerequisites
 
@@ -20,6 +21,19 @@ This document describes how to build the W2PP project using CMake.
    - Download from: https://cmake.org/download/
    - Or install via Visual Studio Installer (CMake tools for Windows)
 
+3. **Install vcpkg**
+   ```powershell
+   # Clone vcpkg (can be anywhere, e.g., C:\dev\vcpkg or C:\vcpkg)
+   git clone https://github.com/Microsoft/vcpkg.git C:\dev\vcpkg
+   cd C:\dev\vcpkg
+   .\bootstrap-vcpkg.bat
+   
+   # Set environment variable (add to your system/user environment variables)
+   [Environment]::SetEnvironmentVariable("VCPKG_ROOT", "C:\dev\vcpkg", "User")
+   ```
+   
+   **Important**: Set the `VCPKG_ROOT` environment variable to point to your vcpkg installation directory.
+
 ## Build Instructions
 
 ### Quick Build
@@ -27,6 +41,9 @@ This document describes how to build the W2PP project using CMake.
 From the project root directory:
 
 ```powershell
+# Make sure VCPKG_ROOT is set
+$env:VCPKG_ROOT = "C:\dev\vcpkg"  # Adjust path as needed
+
 # Configure the project (Visual Studio 2022)
 cmake -B build -S . -G "Visual Studio 17 2022"
 
@@ -137,9 +154,28 @@ To perform a clean build:
 # Remove build directory
 Remove-Item -Recurse -Force build
 
-# Reconfigure and rebuild
-cmake -B build -S . -G "Visual Studio 17 2022" -A Win32 -DCMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+# Reconfigure and rebuild (VCPKG_ROOT must be set)
+$env:VCPKG_ROOT = "C:\dev\vcpkg"  # Adjust path as needed
+cmake -B build -S . -G "Visual Studio 17 2022"
 cmake --build build --config Release
+```
+
+### vcpkg Integration
+
+This project uses vcpkg for dependency management. The required dependencies are:
+- **asio** - Networking library (header-only)
+- **spdlog** - Fast logging library
+- **fmt** - String formatting library
+
+These are automatically installed when you run CMake if you have `VCPKG_ROOT` set correctly.
+
+If you need to manually install the dependencies:
+```powershell
+# Navigate to your vcpkg installation
+cd $env:VCPKG_ROOT
+
+# Install dependencies
+.\vcpkg install asio spdlog fmt --triplet=x64-windows
 ```
 
 ## IDE Integration
@@ -179,7 +215,30 @@ start build/W2PP.sln
 
 ## Notes
 
-- The project uses C++14 standard
+- The project uses C++17 standard
 - Static runtime linking is used (/MT for Release, /MTd for Debug)
 - Windows subsystem is used for all executables (not console)
 - The ClientPatch_v7662 is built as a DLL, not an executable
+- **vcpkg is required** - The project will not build without vcpkg and the `VCPKG_ROOT` environment variable
+
+## Troubleshooting vcpkg
+
+### "Could not find toolchain file" Error
+
+If you see this error, CMake cannot find vcpkg. Make sure:
+1. `VCPKG_ROOT` environment variable is set to your vcpkg installation directory
+2. The file `%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake` exists
+
+### Missing Dependencies
+
+If CMake reports missing packages (asio, spdlog, fmt), vcpkg will automatically install them on the first configure. This may take a few minutes.
+
+### Using Local vcpkg (Alternative)
+
+If you don't want to set `VCPKG_ROOT`, you can place a vcpkg installation in the project root:
+```powershell
+cd E:\wyd\W2PP
+git clone https://github.com/Microsoft/vcpkg.git
+.\vcpkg\bootstrap-vcpkg.bat
+# Then build normally - CMake will detect local vcpkg
+```

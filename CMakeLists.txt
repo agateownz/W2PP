@@ -1,10 +1,17 @@
 cmake_minimum_required(VERSION 3.15)
 
 # Vcpkg integration - MUST be set before project()
+# The toolchain file MUST be set via command line or environment before running CMake
+# Example: cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake
+# Or set VCPKG_ROOT environment variable
 if(DEFINED ENV{VCPKG_ROOT})
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
-elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
-    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+    set(VCPKG_ROOT "$ENV{VCPKG_ROOT}")
+endif()
+
+if(DEFINED VCPKG_ROOT AND EXISTS "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
+    set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE FILEPATH "Vcpkg toolchain file" FORCE)
+elseif(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    message(FATAL_ERROR "Vcpkg toolchain file not found. Please set VCPKG_ROOT environment variable or pass -DCMAKE_TOOLCHAIN_FILE=<path to vcpkg.cmake>")
 endif()
 
 project(W2PP VERSION 1.0 LANGUAGES CXX)
@@ -16,6 +23,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Common include directories
 set(COMMON_INCLUDES
     "${PROJECT_SOURCE_DIR}/Code"
+    "${PROJECT_SOURCE_DIR}/Code/Common"
     "${PROJECT_SOURCE_DIR}"
 )
 
@@ -23,12 +31,14 @@ set(COMMON_INCLUDES
 set(COMMON_SOURCES
     "${PROJECT_SOURCE_DIR}/Code/Basedef.cpp"
     "${PROJECT_SOURCE_DIR}/Code/CPSock.cpp"
+    "${PROJECT_SOURCE_DIR}/Code/Common/Logger.cpp"
 )
 
 set(COMMON_HEADERS
     "${PROJECT_SOURCE_DIR}/Code/Basedef.h"
     "${PROJECT_SOURCE_DIR}/Code/CPSock.h"
     "${PROJECT_SOURCE_DIR}/Code/ItemEffect.h"
+    "${PROJECT_SOURCE_DIR}/Code/Common/Logger.h"
 )
 
 # Find packages from vcpkg
