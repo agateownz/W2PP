@@ -27,6 +27,7 @@
 #include "..\Basedef.h"
 #include "..\CPSock.h"
 #include "..\ItemEffect.h"
+#include "..\Common\Logger.h"
 #include "Language.h"
 
 #include "CItem.h"
@@ -399,8 +400,7 @@ void CCastleZakum::ReadCastleQuest()
 
 	if (fs == NULL)
 	{
-		MessageBoxA(hWndMain, "CastleQuest.txt não foi encontrado.", CASTLE_QUEST_PATH, MB_OK);
-
+		LOG_ERROR("CastleQuest.txt não foi encontrado.: {}", CASTLE_QUEST_PATH);
 		return;
 	}
 

@@ -20,19 +20,20 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <stdlib.h>
-#include <stdio.h> 
+#include <stdio.h>
 #include <fcntl.h>
 #include <io.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/timeb.h>
-#include <string.h>        
+#include <string.h>
 #include <time.h>
 
 #include "CReadFiles.h"
 #include "CFileDB.h"
 #include "CUser.h"
 #include "Server.h"
+#include "../Common/Logger.h"
 
 #include "CRanking.h"
 
@@ -697,8 +698,7 @@ void CReadFiles::ReadGuildInfo()
 
 	if (handle == -1)
 	{
-		MessageBoxA(hWndMain, "no GuildInfo file", "BOOTING ERROR", MB_OK);
-
+		LOG_ERROR("no GuildInfo file");
 		return;
 	}
 
@@ -714,8 +714,7 @@ void CReadFiles::WriteGuildInfo()
 
 	if (handle == -1)
 	{
-		MessageBoxA(hWndMain, "no GuildInfo file", "BOOTING ERROR", MB_OK);
-
+		LOG_ERROR("no GuildInfo file");
 		return;
 	}
 

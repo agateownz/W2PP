@@ -45,7 +45,7 @@ From the project root directory:
 $env:VCPKG_ROOT = "C:\dev\vcpkg"  # Adjust path as needed
 
 # Configure the project (Visual Studio 2022)
-cmake -B build -S . -G "Visual Studio 17 2022"
+cmake -B build -S . -G "Visual Studio 17 2022" -A Win32
 
 # Build Debug configuration
 cmake --build build --config Debug
@@ -58,7 +58,7 @@ cmake --build build --config Release
 
 ```powershell
 # Configure
-cmake -B build -S . -G "Visual Studio 17 2022"
+cmake -B build -S . -G "Visual Studio 17 2022" -A Win32
 
 # Build both Debug and Release
 cmake --build build --config Debug
@@ -156,7 +156,7 @@ Remove-Item -Recurse -Force build
 
 # Reconfigure and rebuild (VCPKG_ROOT must be set)
 $env:VCPKG_ROOT = "C:\dev\vcpkg"  # Adjust path as needed
-cmake -B build -S . -G "Visual Studio 17 2022"
+cmake -B build -S . -G "Visual Studio 17 2022" -A Win32
 cmake --build build --config Release
 ```
 
@@ -175,7 +175,7 @@ If you need to manually install the dependencies:
 cd $env:VCPKG_ROOT
 
 # Install dependencies
-.\vcpkg install asio spdlog fmt --triplet=x64-windows
+.\vcpkg install asio spdlog fmt --triplet=x86-windows
 ```
 
 ## IDE Integration
@@ -207,7 +207,7 @@ cmake --install build --config Release --prefix "C:/W2PP"
 
 ```powershell
 # Generate Visual Studio solution file
-cmake -B build -S . -G "Visual Studio 17 2022"
+cmake -B build -S . -G "Visual Studio 17 2022" -A Win32
 
 # Open the generated solution
 start build/W2PP.sln

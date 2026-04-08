@@ -35,6 +35,7 @@
 #include "../Basedef.h"
 #include "../CPSock.h"
 #include "../ItemEffect.h"
+#include "../Common/Logger.h"
 #include "CUser.h"
 #include "CFileDB.h"
 #include "Server.h"
@@ -100,18 +101,8 @@ HDC hDC = NULL;
 
 void TextOutWind(char *str, int color)
 {
-	char String[1024];
-
-	SetTextColor(hDC, color);
-
-	sprintf(String, str);
-
-	int len = strlen(String);
-
-
-	TextOutA(hDC, x, y, String, len);
-
-	y += 16;
+	// Log to console instead of drawing to window
+	LOG_INFO("[GUI] {}", str);
 }
 
 void DrawConfig()
@@ -394,11 +385,10 @@ int ReadConfig()
 {
 	FILE *fp = fopen("Config.txt", "rt");
 	
-	if(fp == NULL) 
-	{ 
-		MessageBox(hWndMain, "cant find Config.txt", "BOOTING ERROR", NULL);
-
-		return FALSE; 
+	if(fp == NULL)
+	{
+		LOG_ERROR("cant find Config.txt");
+		return FALSE;
 	}
 
 	fscanf(fp, "Sapphire %d\n", &Sapphire);
@@ -439,7 +429,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if(!InitInstance(hInstance, nCmdShow)) 
 		return FALSE;
 
-
 	BASE_InitModuleDir();
     BASE_InitializeBaseDef();
 
@@ -451,8 +440,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	if(handle == -1)
 	{
-		MessageBoxA(hWndMain, "no TransKnight file", "BOOTING ERROR", MB_OK);
-
+		LOG_ERROR("no TransKnight file");
 		return FALSE;
 	}
 
@@ -466,8 +454,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	if(handle == -1)
 	{
-		MessageBoxA(hWndMain, "no Foema file", "BOOTING ERROR", MB_OK);
-
+		LOG_ERROR("no Foema file");
 		return FALSE;
 	}
 
@@ -480,8 +467,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	if(handle == -1)
 	{
-		MessageBoxA(hWndMain, "no BeastMaster file", "BOOTING ERROR", MB_OK);
-
+		LOG_ERROR("no BeastMaster file");
 		return FALSE;
 	}
 
@@ -494,8 +480,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	if(handle == -1)
 	{
-		MessageBoxA(hWndMain, "no Huntress file", "BOOTING ERROR", MB_OK);
-
+		LOG_ERROR("no Huntress file");
 		return FALSE;
 	}
 
@@ -574,10 +559,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	*/
     if(ServerIndex == -1)
     {	
-		MessageBox(hWndMain, "Can't get Server Group Index LocalIP:", "", MB_OK|MB_SYSTEMMODAL);
-		MessageBox(hWndMain, "Can't get Server Group Index TestServerIP:", g_pServerList[i][0], MB_OK | MB_SYSTEMMODAL);
-
-	   return TRUE;
+		LOG_ERROR("Can't get Server Group Index LocalIP");
+		LOG_ERROR("Can't get Server Group Index TestServerIP: {}", g_pServerList[i][0]);
+		return TRUE;
     }
 
 	CReadFiles::ImportItem();
@@ -599,9 +583,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		ret = AdminClient.ConnectServer(sip, port, INADDR_ANY, WSA_READADMINCLIENT);
 
 		if(ret == NULL)
-		{	
-			MessageBox(hWndMain, "there's redirect.txt but can't connect", "BOOTING ERROR", NULL);
-			return FALSE;		
+		{
+			LOG_ERROR("there's redirect.txt but can't connect");
+			return FALSE;
 		}	
 		else
 		{	
@@ -619,6 +603,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		TranslateMessage(&msg);
 		DispatchMessage(&msg); 
 	}
+
+	W2PP::Logger::Shutdown();
 
 	return msg.wParam;  
 }
@@ -1226,8 +1212,7 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 
 				if (handle == -1)
 				{
-					MessageBoxA(hWndMain, "no TransKnight file", "BOOTING ERROR", MB_OK);
-
+					LOG_ERROR("no TransKnight file");
 					return FALSE;
 				}
 
@@ -1241,8 +1226,7 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 
 				if (handle == -1)
 				{
-					MessageBoxA(hWndMain, "no Foema file", "BOOTING ERROR", MB_OK);
-
+					LOG_ERROR("no Foema file");
 					return FALSE;
 				}
 
@@ -1255,8 +1239,7 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 
 				if (handle == -1)
 				{
-					MessageBoxA(hWndMain, "no BeastMaster file", "BOOTING ERROR", MB_OK);
-
+					LOG_ERROR("no BeastMaster file");
 					return FALSE;
 				}
 
@@ -1269,8 +1252,7 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 
 				if (handle == -1)
 				{
-					MessageBoxA(hWndMain, "no Huntress file", "BOOTING ERROR", MB_OK);
-
+					LOG_ERROR("no Huntress file");
 					return FALSE;
 				}
 
@@ -1303,21 +1285,14 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 		break; 
 
 	case WM_CLOSE:
-		{	
-			int rret = MessageBox(hWndMain, "Desligando servidor, não se esqueça de salvar as contas !", "Aviso !! Desligando Servidor !!", MB_OKCANCEL | MB_ICONWARNING);
+		{
+			LOG_INFO("Server shutting down - saving accounts");
+			WriteConfig();
 
-			if(rret == 1)
-			{
-				WriteConfig();
+			DayLog_ExpLog();
+			DayLog_ItemLog();
 
-				if (fLogFile)
-					fclose(fLogFile);
-
-				DayLog_ExpLog();
-				DayLog_ItemLog();
-
-				DefWindowProc(hWnd,message,wParam,lParam);
-			}	
+			DefWindowProc(hWnd,message,wParam,lParam);
 
 			return true;			
 
@@ -2090,26 +2065,20 @@ void ProcessMinTimer()
 
 void StartLog(char *cccc)
 {
-	 char Temp[256];
+	struct tm when;
+	time_t now;
+	time(&now);
+	when = *localtime(&now);
 
-     if(fLogFile != NULL)
-	 {  
-		 int ret = fclose(fLogFile);
+	LastLogDay = when.tm_mday;
 
-		 if(ret)
-			 Log("Logfile close fail!!", "-system", 0);
-	 }
+	// Create log directory if it doesn't exist
+	CreateDirectoryA(".\\logs", NULL);
 
-	 struct tm when;
-	 time_t now;
-	 time(&now); 
-	 when = *localtime(&now);
-
-	 sprintf(Temp, ".\\Log\\DB_%02d_%02d_%04d_%02d_%02d_%02d_%s.txt", when.tm_mday, when.tm_mon + 1, when.tm_year + 1900, when.tm_hour, when.tm_min, when.tm_sec, cccc);
-
-   	 fLogFile = fopen(Temp, "a+");
-
-	 LastLogDay = when.tm_mday;
+	// Log file is now managed by Common Logger with date-based rotation
+	LOG_INFO("Log started on {:02d}_{:02d}_{:04d}_{:02d}_{:02d}_{:02d} ({})",
+		when.tm_mday, when.tm_mon + 1, when.tm_year + 1900,
+		when.tm_hour, when.tm_min, when.tm_sec, cccc);
 }
 
 void Log(char *str1, char *str2, unsigned int ip)
@@ -2132,10 +2101,7 @@ void Log(char *str1, char *str2, unsigned int ip)
 		sprintf(LogTemp, "[%02d/%02d/%04d][%02d:%02d:%02d] ", when.tm_mday, when.tm_mon + 1, when.tm_year + 1900, when.tm_hour, when.tm_min, when.tm_sec);
 	sprintf(LogTemp, "%s %s %s \n", LogTemp, str2, str1);
 
-	if (fLogFile)
-		fprintf(fLogFile, LogTemp);
-
-	SetWindowText(hWndMain, LogTemp);
+	LOG_INFO("%s", LogTemp);
 }
 
 void DayLog_ExpLog()

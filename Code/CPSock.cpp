@@ -23,6 +23,7 @@
 
 #include "CPSock.h"
 #include "Basedef.h"
+#include "Common/Logger.h"
 
 int ConnectPort = 0;
 
@@ -132,10 +133,9 @@ SOCKET CPSock::StartListen(HWND hWnd, int ip, int port, int WSA)
 	char		Temp[256];
 	SOCKET		tSock = socket(AF_INET, SOCK_STREAM, 0);
 
-	if(tSock == INVALID_SOCKET) 
-	{	
-		MessageBox(hWnd, "Initialize socket fail", "ERROR", MB_OK);
-
+	if(tSock == INVALID_SOCKET)
+	{
+		LOG_ERROR("Initialize socket fail");
 		return FALSE;
 	}
     
@@ -145,26 +145,23 @@ SOCKET CPSock::StartListen(HWND hWnd, int ip, int port, int WSA)
 	local_sin.sin_port			= htons((unsigned short int)port);       
 
 	if(bind(tSock, (struct sockaddr FAR *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
-	{	
-		MessageBox(hWnd, "Binding fail", "ERROR", MB_OK);
+	{
+		LOG_ERROR("Binding fail");
 		closesocket(tSock);
-
 		return FALSE;
 	}
 
 	if(listen(tSock, MAX_PENDING_CONNECTS) < 0)
-	{	
-		MessageBox(hWnd, "Listen fail", "ERROR", MB_OK);
+	{
+		LOG_ERROR("Listen fail");
 		closesocket(tSock);
-
 		return FALSE;
 	}
 
 	if(WSAAsyncSelect(tSock, hWnd, WSA, FD_ACCEPT) > 0)
-	{	
-		MessageBox (hWnd, "WSAAsyncSelect fail", "ERROR", MB_OK);
+	{
+		LOG_ERROR("WSAAsyncSelect fail");
 		closesocket(tSock);
-
 		return FALSE;
 	}
 
@@ -195,9 +192,9 @@ SOCKET CPSock::ConnectServer(char *HostAddr, int Port, int ip, int WSA)
 
 	SOCKET tSock = socket(AF_INET, SOCK_STREAM, 0);
 
-	if(tSock == INVALID_SOCKET) 
-    {	
-		MessageBox(NULL, "Initialize socket fail", "ERROR", MB_OK);
+	if(tSock == INVALID_SOCKET)
+    {
+		LOG_ERROR("Initialize socket fail");
 		return 0;
 	}
 	
@@ -216,10 +213,9 @@ SOCKET CPSock::ConnectServer(char *HostAddr, int Port, int ip, int WSA)
 			local_sin.sin_port = htons((unsigned short int)(ConnectPort + 5000));
 
 			if(bind(tSock, (struct sockaddr FAR *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
-			{	
-				MessageBox(NULL, "Binding fail", "ERROR", MB_OK);
+			{
+				LOG_ERROR("Binding fail");
 				closesocket(tSock);
-
 				return 0;
 			}
 		}
@@ -288,10 +284,9 @@ SOCKET CPSock::ConnectBillServer(char *HostAddr, int Port, int ip, int WSA)
 			local_sin.sin_port = htons((unsigned short int)(ConnectPort + 6000));
 
 			if(bind(tSock, (struct sockaddr FAR *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
-			{	
-				MessageBox (NULL, "Binding fail", "ERROR", MB_OK);	
+			{
+				LOG_ERROR("Binding fail");
 				closesocket(tSock);
-
 				return 0;
 			}
 		}

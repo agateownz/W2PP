@@ -27,6 +27,7 @@
 #include "..\Basedef.h"
 #include "..\CPSock.h"
 #include "..\ItemEffect.h"
+#include "..\Common\Logger.h"
 #include "Language.h"
 
 #include "CItem.h"
@@ -765,7 +766,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 
 	if (fp == NULL)
 	{
-		MessageBox(hWndMain, "no gameconfig.txt, server will generate default setting.", "Error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("no gameconfig.txt, server will generate default setting.", "Error");
 
 		ConfigReady = 1;
 
@@ -782,7 +783,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 
 	if (strcmp(tmp, "Drop Item Event Settings:\n"))
 	{
-		MessageBox(hWndMain, "not game-server generated gameconfig.txt - Line1", "Error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("not game-server generated gameconfig.txt - Line1", "Error");
 
 		fclose(fp);
 
@@ -802,7 +803,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 
 	if (strcmp(parm[0], "evindex") || strcmp(parm[1], "evdelete") || strcmp(parm[2], "evon") || strcmp(parm[3], "evitem") || strcmp(parm[4], "evrate") || strcmp(parm[5], "evstart"))
 	{
-		MessageBox(hWndMain, "not game-server generated gameconfig.txt - Line2", "Error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("not game-server generated gameconfig.txt - Line2", "Error");
 
 		fclose(fp);
 
@@ -811,7 +812,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 
 	if (value[0] == -1 || value[1] == -1 || value[2] == -1 || value[3] == -1 || value[4] == -1 || value[5] == -1 || value[6] == -1 || value[7] == -1)
 	{
-		MessageBox(hWndMain, "not game-server generated gameconfig.txt - Line2", "Error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("not game-server generated gameconfig.txt - Line2", "Error");
 
 		fclose(fp);
 
@@ -832,7 +833,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 
 	if (strcmp(tmp, "Etc Event Settings:\n"))
 	{
-		MessageBox(hWndMain, "not game server generated gameconfig.txt - Line3", "Error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("not game server generated gameconfig.txt - Line3", "Error");
 
 		fclose(fp);
 
@@ -852,7 +853,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 
 	if (strcmp(parm[0], "double") || strcmp(parm[1], "deadpoint") || strcmp(parm[2], "dungeonevent") || strcmp(parm[3], "statsapphire"))
 	{
-		MessageBox(hWndMain, "not game-server generated gameconfig.txt - Line4", "Error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("not game-server generated gameconfig.txt - Line4", "Error");
 
 		fclose(fp);
 
@@ -861,7 +862,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 
 	if (value[0] == -1 || value[1] == -1 || value[2] == -1 || value[3] == -1)
 	{
-		MessageBox(hWndMain, "not game-server generated gameconfig.txt - Line4", "Error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("not game-server generated gameconfig.txt - Line4", "Error");
 
 		fclose(fp);
 
@@ -878,7 +879,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 
 	if (strcmp(tmp, "Billing Settings:\n"))
 	{
-		MessageBox(hWndMain, "not game server generated gameconfig.txt - Line5", "Error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("not game server generated gameconfig.txt - Line5", "Error");
 
 		fclose(fp);
 
@@ -898,7 +899,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 
 	if (strcmp(parm[0], "billmode") || strcmp(parm[1], "freeexp"))
 	{
-		MessageBox(hWndMain, "not game-server generated gameconfig.txt - Line6", "Error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("not game-server generated gameconfig.txt - Line6", "Error");
 
 		fclose(fp);
 
@@ -907,7 +908,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 
 	if (value[0] == -1 || value[1] == -1)
 	{
-		MessageBox(hWndMain, "not game-server generated gameconfig.txt - Line6", "Error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("not game-server generated gameconfig.txt - Line6", "Error");
 
 		fclose(fp);
 
@@ -928,7 +929,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 
 	if (strcmp(tmp, "Item Drop Bonus Settings:\n"))
 	{
-		MessageBox(hWndMain, "not game server generated gameconfig.txt - Line7", "Error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("not game server generated gameconfig.txt - Line7", "Error");
 
 		return;
 	}
@@ -941,7 +942,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 	{
 		if (value[k] < 0 || value[k] > 9999)
 		{
-			MessageBox(hWndMain, "not game-server generated gameconfig.txt - Line8", "Error", MB_OK | MB_SYSTEMMODAL);
+			LOG_ERROR("not game-server generated gameconfig.txt - Line8", "Error");
 
 			fclose(fp);
 
@@ -960,7 +961,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 	{
 		if (value[k] < 0 || value[k] > 9999)
 		{
-			MessageBox(hWndMain, "not game-server generated gameconfig.txt - Line9", "Error", MB_OK | MB_SYSTEMMODAL);
+			LOG_ERROR("not game-server generated gameconfig.txt - Line9", "Error");
 
 			fclose(fp);
 
@@ -981,7 +982,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 	{
 		if (value[k] < 0 || value[k] > 9999)
 		{
-			MessageBox(hWndMain, "not game-server generated gameconfig.txt - Line10", "Error", MB_OK | MB_SYSTEMMODAL);
+			LOG_ERROR("not game-server generated gameconfig.txt - Line10", "Error");
 
 			fclose(fp);
 
@@ -1001,7 +1002,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 	{
 		if (value[k] < 0 || value[k] > 9999)
 		{
-			MessageBox(hWndMain, "not game-server generated gameconfig.txt - Line11", "Error", MB_OK | MB_SYSTEMMODAL);
+			LOG_ERROR("not game-server generated gameconfig.txt - Line11", "Error");
 
 			fclose(fp);
 
@@ -1017,7 +1018,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 
 	if (strcmp(tmp, "Treasure Settings:\n"))
 	{
-		MessageBox(hWndMain, "not game server generated gameconfig.txt - Line12", "Error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("not game server generated gameconfig.txt - Line12", "Error");
 
 		fclose(fp);
 
@@ -1066,7 +1067,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 
 	if (strcmp(tmp, "Etc Settings:\n"))
 	{
-		MessageBox(hWndMain, "not game server generated gameconfig.txt - Line13", "Error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("not game server generated gameconfig.txt - Line13", "Error");
 
 		fclose(fp);
 
@@ -1086,7 +1087,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 
 	if (strcmp(parm[0], "partydif") || strcmp(parm[1], "kefrastatus") || strcmp(parm[2], "GTorreHour") || strcmp(parm[3], "RVRHour") || strcmp(parm[4], "DropItem") || strcmp(parm[5], "BRHour") || strcmp(parm[6], "maxNightmare") || strcmp(parm[7], "PotionDelay"))
 	{
-		MessageBox(hWndMain, "not game-server generated gameconfig.txt - Line13", "Error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("not game-server generated gameconfig.txt - Line13", "Error");
 
 		fclose(fp);
 
@@ -1095,7 +1096,7 @@ void ReadConfig(void) // TODO : EVERYTHING
 
 	if (value[0] == -1 || value[1] == -1 || value[2] == -1 || value[3] == -1 || value[4] == -1 || value[5] == -1 || value[6] == -1 || value[7] == -1)
 	{
-		MessageBox(hWndMain, "not game-server generated gameconfig.txt - Line13", "Error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("not game-server generated gameconfig.txt - Line13", "Error");
 
 		fclose(fp);
 
@@ -3517,7 +3518,7 @@ BOOL WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 		fclose(fp);
 	}
 	else
-		MessageBox(hWndMain, "Não foi possivel encontrar o arquivo LocalIP.txt", "Erro ao iniciar", NULL);
+		LOG_ERROR("Não foi possivel encontrar o arquivo LocalIP.txt", "Erro ao iniciar");
 
 	int r1 = 0, r2 = 0, r3 = 0, r4 = 0;
 
@@ -3550,7 +3551,7 @@ BOOL WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 	if (DBServerAddress[0] == 0)
 	{
-		MessageBox(hWndMain, "Não foi possivel pegar o ServerGroup. LocalIP.txt / ServerList.txt", "Erro ao iniciar", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("Não foi possivel pegar o ServerGroup. LocalIP.txt / ServerList.txt", "Erro ao iniciar");
 
 		return TRUE;
 	}
@@ -3564,7 +3565,6 @@ BOOL WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	if (ret == NULL)
 	{
 		Log("erro, Não foi possivel se conectar a DBServer", "-system", 0);
-		MessageBox(hWndMain, "Não foi possivel se conectar a DBServer", "Erro ao iniciar", NULL);
 
 		return FALSE;
 	}
@@ -4115,9 +4115,6 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 	} break;
 	case WM_CLOSE:
 	{
-		if (MessageBox(hWndMain, "Você realmente deseja desligar o server?", "Aviso!!!", MB_ICONQUESTION | MB_YESNO) == IDNO)
-			break;
-
 		if (BILLING != 0)
 		{
 			_AUTH_GAME sm;
@@ -4128,9 +4125,6 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 		}
 
 		CReadFiles::WriteGuild();
-
-		if (fLogFile)
-			fclose(fLogFile);
 
 		if (hFont)
 		{
@@ -6653,19 +6647,17 @@ void GuildProcess()
 
 void StartLog()
 {
-	if (fLogFile != NULL)
-		fclose(fLogFile);
-
 	struct tm when;
 	time_t now;
 	time(&now);
 	when = *localtime(&now);
 
-	sprintf(temp, ".\\Log\\TM_%02d_%02d_%04d_%02d_%02d_%02d.txt", when.tm_mday, when.tm_mon + 1, when.tm_year + 1900, when.tm_hour, when.tm_min, when.tm_sec);
-
-	fLogFile = fopen(temp, "wt");
-
 	LastLogDay = when.tm_mday;
+
+	// Log file is now managed by Common Logger with date-based rotation
+	LOG_INFO("Log started on {:02d}_{:02d}_{:04d}_{:02d}_{:02d}_{:02d}",
+		when.tm_mday, when.tm_mon + 1, when.tm_year + 1900,
+		when.tm_hour, when.tm_min, when.tm_sec);
 }
 
 void CrackLog(int conn, char *str)
@@ -6719,10 +6711,7 @@ void Log(char *str1, char *str2, unsigned int ip)
 	
 	sprintf(LogTemp, "%s %s %s \n", LogTemp, str2, str1);
 
-	if (fLogFile)
-		fprintf(fLogFile, LogTemp);
-
-	SetWindowText(hWndMain, LogTemp);
+	LOG_INFO("%s", LogTemp);
 	
 }
 
@@ -8735,7 +8724,7 @@ void ReadLevelItemConfig(void)
 
 	if (fp == NULL)
 	{
-		MessageBox(hWndMain, "no LevelItem.txt", "Error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("no LevelItem.txt", "Error");
 
 		return;
 	}
@@ -9207,19 +9196,17 @@ void MobAttack(int attacker, MSG_Attack sm)
 
 void StartChatLog()
 {
-	if (fChatLogFile != NULL)
-		fclose(fChatLogFile);
-
 	struct tm when;
 	time_t now;
 	time(&now);
 	when = *localtime(&now);
 
-	sprintf(temp, ".\\chat_log\\TM_%02d_%02d_%04d_%02d_%02d_%02d.txt", when.tm_mday, when.tm_mon + 1, when.tm_year + 1900, when.tm_hour, when.tm_min, when.tm_sec);
-
-	fChatLogFile = fopen(temp, "wt");
-
 	LastChatLogDay = when.tm_mday;
+
+	// Chat logging is now handled by Common Logger
+	LOG_INFO("Chat log started on {:02d}_{:02d}_{:04d}_{:02d}_{:02d}_{:02d}",
+		when.tm_mday, when.tm_mon + 1, when.tm_year + 1900,
+		when.tm_hour, when.tm_min, when.tm_sec);
 }
 
 void ChatLog(char *str1, char *str2, unsigned int ip)
@@ -9229,36 +9216,35 @@ void ChatLog(char *str1, char *str2, unsigned int ip)
 	time(&now);
 	when = *localtime(&now);
 
-	char LogTemp[1024];
-
 	unsigned char *cIP = (unsigned char*)&ip;
 
 	if (ip != 0)
-		sprintf(LogTemp, "%02d.%02d.%04d.%02d.%02d.%02d IP: %d.%d.%d.%d", when.tm_mday, when.tm_mon + 1, when.tm_year + 1900, when.tm_hour, when.tm_min, when.tm_sec, cIP[0], cIP[1], cIP[2], cIP[3]);
+		LOG_INFO("[CHAT][{:02d}_{:02d}_{:04d}_{:02d}_{:02d}_{:02d}] IP: {}.{}.{}.{} {} {}",
+			when.tm_mday, when.tm_mon + 1, when.tm_year + 1900,
+			when.tm_hour, when.tm_min, when.tm_sec,
+			cIP[0], cIP[1], cIP[2], cIP[3], str2, str1);
 	else
-		sprintf(LogTemp, "%02d.%02d.%04d.%02d.%02d.%02d ", when.tm_mday, when.tm_mon + 1, when.tm_year + 1900, when.tm_hour, when.tm_min, when.tm_sec);
-	
-	sprintf(LogTemp, "%s %s %s \n", LogTemp, str2, str1);
-
-	if (fChatLogFile)
-		fprintf(fChatLogFile, LogTemp);
+		LOG_INFO("[CHAT][{:02d}_{:02d}_{:04d}_{:02d}_{:02d}_{:02d}] {} {}",
+			when.tm_mday, when.tm_mon + 1, when.tm_year + 1900,
+			when.tm_hour, when.tm_min, when.tm_sec, str2, str1);
 }
 
 void StartItemLog()
 {
-	if (fItemLogFile != NULL)
-		fclose(fItemLogFile);
-
 	struct tm when;
 	time_t now;
 	time(&now);
 	when = *localtime(&now);
 
-	sprintf(temp, ".\\item_log\\TM_%02d_%02d_%04d_%02d_%02d_%02d.txt", when.tm_mday, when.tm_mon + 1, when.tm_year + 1900, when.tm_hour, when.tm_min, when.tm_sec);
-
-	fItemLogFile = fopen(temp, "wt");
-
 	LastItemLogDay = when.tm_mday;
+
+	// Create log directory if it doesn't exist
+	CreateDirectoryA(".\\logs", NULL);
+
+	// Item logging is now handled by Common Logger
+	LOG_INFO("Item log started on {:02d}_{:02d}_{:04d}_{:02d}_{:02d}_{:02d}",
+		when.tm_mday, when.tm_mon + 1, when.tm_year + 1900,
+		when.tm_hour, when.tm_min, when.tm_sec);
 }
 
 void ItemLog(char *str1, char *str2, unsigned int ip)
@@ -9268,19 +9254,17 @@ void ItemLog(char *str1, char *str2, unsigned int ip)
 	time(&now);
 	when = *localtime(&now);
 
-	char LogTemp[1024];
-
 	unsigned char *cIP = (unsigned char*)&ip;
 
 	if (ip != 0)
-		sprintf(LogTemp, "%02d.%02d.%04d.%02d.%02d.%02d IP: %d.%d.%d.%d", when.tm_mday, when.tm_mon + 1, when.tm_year + 1900, when.tm_hour, when.tm_min, when.tm_sec, cIP[0], cIP[1], cIP[2], cIP[3]);
+		LOG_INFO("[ITEM][{:02d}_{:02d}_{:04d}_{:02d}_{:02d}_{:02d}] IP: {}.{}.{}.{} {} {}",
+			when.tm_mday, when.tm_mon + 1, when.tm_year + 1900,
+			when.tm_hour, when.tm_min, when.tm_sec,
+			cIP[0], cIP[1], cIP[2], cIP[3], str2, str1);
 	else
-		sprintf(LogTemp, "%02d.%02d.%04d.%02d.%02d.%02d ", when.tm_mday, when.tm_mon + 1, when.tm_year + 1900, when.tm_hour, when.tm_min, when.tm_sec);
-	
-	sprintf(LogTemp, "%s %s %s \n", LogTemp, str2, str1);
-
-	if (fItemLogFile)
-		fprintf(fItemLogFile, LogTemp);
+		LOG_INFO("[ITEM][{:02d}_{:02d}_{:04d}_{:02d}_{:02d}_{:02d}] {} {}",
+			when.tm_mday, when.tm_mon + 1, when.tm_year + 1900,
+			when.tm_hour, when.tm_min, when.tm_sec, str2, str1);
 }
 
 int  ParseMobMercString(int Num, char *str)

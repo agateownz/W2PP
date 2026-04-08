@@ -21,18 +21,19 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <stdlib.h>
-#include <stdio.h> 
+#include <stdio.h>
 #include <fcntl.h>
 #include <io.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/timeb.h>
-#include <string.h>        
+#include <string.h>
 #include <time.h>
 #include <mbstring.h>
 
 #include "Basedef.h"
 #include "ItemEffect.h"
+#include "Common/Logger.h"
 
 #pragma region Defines
 
@@ -2749,7 +2750,7 @@ void BASE_WriteItemList(int nItemList)
 
 		if(fp == NULL)
 		{
-			MessageBox(NULL, "ItemList.binÀ» »ý¼ºÇÒ¼ö ¾ø½À´Ï´Ù. ", "ERROR", NULL);
+			LOG_ERROR("Failed to create ItemList.bin");
 			return;
 		}
 
@@ -2806,7 +2807,7 @@ int BASE_ReadSkillBin()
 	}
 	else
 	{
-		MessageBox(NULL, "Can't read SkillData.bin", "ERROR", NULL);
+		LOG_ERROR("Can't read SkillData.bin");
 		return FALSE;
 	}
 
@@ -2834,10 +2835,9 @@ int BASE_ReadItemList()
 	FILE *fp;
 	fp = fopen("../../Common/ItemList.bin", "rb");
 
-	if(fp == NULL) 
+	if(fp == NULL)
 	{
-		MessageBox(NULL, "Can't read ItemList.bin", "ERROR", NULL);
-
+		LOG_ERROR("Can't read ItemList.bin");
 		return FALSE;
 	}
 
@@ -4676,10 +4676,9 @@ void BASE_InitializeMessage(char *file)
 		}
 
 		if(TabPos == 0)
-		{  
-			MessageBox(NULL, str, "Can't parse String", MB_OK);
-
-		   continue;
+		{
+			LOG_ERROR("Can't parse String: {}", str);
+			continue;
 		}
 
         cont = (char*)(str + TabPos + 1);
@@ -4697,9 +4696,8 @@ void BASE_InitializeMessage(char *file)
         int len = (int)strlen(cont);
 
 		if(len <= 0 || len >= 128)
-		{  
-			MessageBox(NULL, str, "Empty or Long String", MB_OK);
-
+		{
+			LOG_ERROR("Empty or Long String: {}", str);
 			continue;
 		}
 
@@ -4751,51 +4749,45 @@ void BASE_InitializeMobname(char *file, int offset)
 				} 
 			}
 
-			if(TabPos == 0)
-			{  
-				MessageBox(NULL, str, "Can't parse String", MB_OK);
+		if(TabPos == 0)
+		{
+			LOG_ERROR("Can't parse String: {}", str);
+			continue;
+		}
 
-				continue;
-			}
+		cont = (char*)(str + TabPos + 1);
 
-			cont = (char*)(str + TabPos + 1);
-
-			for(int i = 0; i < 128; i++)
-			{   
-				if(cont[i] == '\t' || cont[i] == '\n' || cont[i] == 0)
-				{ 
-					cont[i] = 0;
-
-					break;
-				} 
-			}
-
-			int len = 0;
-			len = (int)strlen(part1);
-
-			if(len <= 0 || len >= 16)
-			{  
-				MessageBox(NULL, str, "Empty or Long String-1st", MB_OK);
-
-				continue;
-			}
-
-			len = (int)strlen(cont);
-
-			if(len <= 0 || len >= 16)
-			{  
-				MessageBox(NULL, str, "Empty or Long String-2nd", MB_OK);
-
-				continue;
-			}
-
-
-			if(Index < 0 || Index >= MAX_STRING) 
+		for(int i = 0; i < 128; i++)
+		{
+			if(cont[i] == '\t' || cont[i] == '\n' || cont[i] == 0)
 			{
-				MessageBox(NULL, str, "Too much items in mobname.txt", MB_OK);
-
+				cont[i] = 0;
 				break;
 			}
+		}
+
+		int len = 0;
+		len = (int)strlen(part1);
+
+		if(len <= 0 || len >= 16)
+		{
+			LOG_ERROR("Empty or Long String-1st: {}", str);
+			continue;
+		}
+
+		len = (int)strlen(cont);
+
+		if(len <= 0 || len >= 16)
+		{
+			LOG_ERROR("Empty or Long String-2nd: {}", str);
+			continue;
+		}
+
+		if(Index < 0 || Index >= MAX_STRING)
+		{
+			LOG_ERROR("Too much items in mobname.txt: {}", str);
+			break;
+		}
 
 			strcpy(g_pEnglish[Index][0], part1);
 			strcpy(g_pEnglish[Index][1], cont);
@@ -4831,68 +4823,60 @@ void BASE_InitializeMobname(char *file, int offset)
 				} 
 			}
 
-			if(TabPos == 0)
-			{  
-				MessageBox(NULL, str, "Can't parse String", MB_OK);
+		if(TabPos == 0)
+		{
+			LOG_ERROR("Can't parse String: {}", str);
+			continue;
+		}
 
-				continue;
-			}
+		cont = (char*)(str + TabPos + 1);
 
-			cont = (char*)(str + TabPos + 1);
-
-			for(int i = 0; i < 128; i++)
-			{   
-				if(cont[i] == '\t' || cont[i] == '\n' || cont[i] == 0)
-				{ 
-					cont[i] = 0;
-
-					break;
-				} 
-			}
-
-			int len = 0;
-			len = strlen(part1);
-
-			if(len <= 0 || len >= NAME_LENGTH)
-			{  
-				MessageBox(NULL, str, "Empty or Long String-1st", MB_OK);
-
-				continue;
-			}
-
-			len = (int)strlen(cont);
-
-			if(len <= 0 || len >= NAME_LENGTH)
-			{  
-				MessageBox(NULL, str, "Empty or Long String-2nd", MB_OK);
-
-				continue;
-			}
-
-
-			if(Index < 0 || Index >= MAX_STRING) 
+		for(int i = 0; i < 128; i++)
+		{
+			if(cont[i] == '\t' || cont[i] == '\n' || cont[i] == 0)
 			{
-				MessageBox(NULL, str, "Too much items in mobname.txt", MB_OK);
-
+				cont[i] = 0;
 				break;
 			}
+		}
 
+		int len = 0;
+		len = strlen(part1);
 
-			for(Index = 0; Index < MAX_STRING; Index++)
-			{
-				if(!strcmp(part1, g_pEnglish[Index][0]))
-					break;
+		if(len <= 0 || len >= NAME_LENGTH)
+		{
+			LOG_ERROR("Empty or Long String-1st: {}", str);
+			continue;
+		}
 
-				if(!strcmp(part1, g_pEnglish[Index][1]))
-					break;
-			}
+		len = (int)strlen(cont);
 
-			if(Index == MAX_STRING)
-			{
-                MessageBoxA(NULL, str, "Can't Find match mobname", MB_OK);
+		if(len <= 0 || len >= NAME_LENGTH)
+		{
+			LOG_ERROR("Empty or Long String-2nd: {}", str);
+			continue;
+		}
 
-                break;
-			}
+		if(Index < 0 || Index >= MAX_STRING)
+		{
+			LOG_ERROR("Too much items in mobname.txt: {}", str);
+			break;
+		}
+
+		for(Index = 0; Index < MAX_STRING; Index++)
+		{
+			if(!strcmp(part1, g_pEnglish[Index][0]))
+				break;
+
+			if(!strcmp(part1, g_pEnglish[Index][1]))
+				break;
+		}
+
+		if(Index == MAX_STRING)
+		{
+			LOG_ERROR("Can't Find match mobname: {}", str);
+			break;
+		}
 
 			strcpy(g_pEnglish[Index][2], cont);
 
@@ -4972,8 +4956,7 @@ void BASE_InitializeItemList()
 
 	if(ret == FALSE)
 	{
-		MessageBox(NULL, "There is no file.", "itemlist.csv", MB_OK);
-
+		LOG_ERROR("There is no file: itemlist.csv");
 		return;
 	}
 
@@ -4996,8 +4979,7 @@ int BASE_ReadItemListFile(char *filename, int Build)
 
 		if(wfp == NULL)
 		{
-			MessageBox(NULL, "Can't write extraitem.bin", "ERROR", MB_OK);
-
+			LOG_ERROR("Can't write extraitem.bin");
 			return FALSE;
 		}
 	}
@@ -5067,8 +5049,7 @@ int BASE_ReadItemListFile(char *filename, int Build)
 
 		if(Index >= MAX_ITEMLIST)
 		{
-			MessageBox(NULL, str, "check MAX_ITEMLIST", MB_OK);
-
+			LOG_ERROR("check MAX_ITEMLIST: {}", str);
 			continue;
 		}
 
@@ -5076,8 +5057,7 @@ int BASE_ReadItemListFile(char *filename, int Build)
 
         if (len >= ITEMNAME_LENGTH-1)
 		{
-			MessageBox(NULL, "too long Item Name", Name, MB_OK);
-
+			LOG_ERROR("too long Item Name: {}", Name);
 			Name[ITEMNAME_LENGTH-1] = 0;
 			Name[ITEMNAME_LENGTH-2] = 0;
 		}
@@ -5133,9 +5113,8 @@ int BASE_ReadItemListFile(char *filename, int Build)
 
 		    if (j == MAX_EFFECTINDEX)
 			{
-				MessageBox(0, nE[j], "Unregisterd effect", 0);
-
-                continue;
+				LOG_ERROR("Unregisterd effect: {}", nE[j]);
+				continue;
 			}   
 
 			g_pItemList[Index].stEffect[j].sEffect = v;
@@ -5174,8 +5153,7 @@ void BASE_InitializeEffectName()
 
 	if(fp == NULL)
 	{
-		MessageBoxA(NULL, "There is no file", "ItemEffect", MB_OK);
-
+		LOG_ERROR("There is no file: ItemEffect");
 		return;
 	}
 
@@ -5221,15 +5199,13 @@ void BASE_InitializeEffectName()
 
 		if(val < 0 || val > MAX_EFFECTINDEX)
 		{
-			MessageBox(NULL, temp,"Effect.hÀÇ Define Value°¡ ¼ýÀÚ°¡ ¾Æ´Ï°Å³ª 0ÀÌÇÏ ¶Ç´Â MAX_EFFECTINDEXÀÌ»óÀÌ´Ù", MB_OK);
-
+			LOG_ERROR("Effect.h Define Value is not a number or less than 0 or greater than MAX_EFFECTINDEX: {}", temp);
 			continue;
 		}
 
 		if(EffectNameTable[val][0] != 0)
 		{
-			MessageBox(NULL, temp, EffectNameTable[val], MB_OK);
-
+			LOG_ERROR("Effect name already defined: {}", EffectNameTable[val]);
 			continue;
 		}
 		
@@ -5860,10 +5836,9 @@ void BASE_WriteInitItem()
 
 	FILE *fp = fopen("../../Common/InitItem.bin", "wb");
 
-	if(fp == NULL) 
+	if(fp == NULL)
 	{
-		MessageBox(NULL, "Can't write inititem.bin", "ERROR", MB_OK | MB_SYSTEMMODAL);
-
+		LOG_ERROR("Can't write inititem.bin");
 		return;
 	}
 
@@ -5914,10 +5889,9 @@ int BASE_ReadInitItem()
 
 	FILE *fp = fopen(szFileName, "rb");
 
-	if(fp == NULL) 
+	if(fp == NULL)
 	{
-		MessageBox(NULL, "Can't read inititem", "ERROR", MB_OK | MB_SYSTEMMODAL);
-
+		LOG_ERROR("Can't read inititem");
 		return FALSE;
 	}
 
@@ -5955,8 +5929,7 @@ void BASE_InitializeInitItem()
 
 	if(fp == NULL)
 	{
-		MessageBox(NULL, "There is no file", "InitItem.csv", MB_OK);
-
+		LOG_ERROR("There is no file: InitItem.csv");
 		return;
 	}
 	
@@ -6007,8 +5980,7 @@ void BASE_InitializeSkill()
 
 	 if(fp == NULL)
 	 {
-		 MessageBox(NULL, "There is no file", "SkillData.csv", NULL);
-
+		 LOG_ERROR("There is no file: SkillData.csv");
 		 return;
 	 }	
 
@@ -6119,7 +6091,7 @@ void BASE_InitializeClientGuildName(int group)
 
 		if((Group < 0 || Group >= MAX_SERVERGROUP || Server < 0 || Server >= 16) || (Guild < 0 || Guild >= MAX_GUILD) || szGuild[0][0] == 0)
 		{
-			MessageBoxA(NULL, str, "Can`t parse string in Guilds.txt", MB_OK);
+			LOG_ERROR("Can`t parse string in Guilds.txt: {}", str);
 			continue;
 		}
 
@@ -6162,9 +6134,8 @@ void BASE_InitializeGuildName()
 
 	if(fp == NULL)
 	{
-		MessageBox(0, "can't find guilds.txt", "error", MB_OK | MB_SYSTEMMODAL);
+		LOG_ERROR("can't find guilds.txt");
 		memset(g_pGuildName, 0, sizeof(g_pGuildName));
-
 		return;
 	}
 
@@ -6190,8 +6161,7 @@ void BASE_InitializeGuildName()
 
 		if((Group < 0 || Group >= MAX_SERVERGROUP) || (Server < 0 || Server >= 16) || (Guild < 0 || Guild >= MAX_GUILD) || szGuild[0] == 0)
 		{
-			MessageBox(0, str, "Can't parse string in Guilds.txt", 0);
-
+			LOG_ERROR("Can't parse string in Guilds.txt: {}", str);
 			break;
 		}
 
@@ -6226,8 +6196,7 @@ int BASE_InitializeServerList()
 
 	if(fp == NULL)
 	{
-		MessageBoxA(NULL, "Can't open server list.txt", "adress", MB_OK);
-
+		LOG_ERROR("Can't open server list.txt");
 		return FALSE;
 	}
 	
@@ -6322,8 +6291,7 @@ int BASE_InitializeAttribute()
 	
 	if(fp == NULL)
 	{
-		MessageBoxA(NULL, "There is no file", "AttributeMap.dat", MB_OK);
-
+		LOG_ERROR("There is no file: AttributeMap.dat");
 		return FALSE;
 	}
 
