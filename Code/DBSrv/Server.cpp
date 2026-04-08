@@ -92,14 +92,7 @@ CFileDB cFileDB;
 STRUCT_MOB g_pBaseSet[MAX_CLASS];
 STRUCT_ITEMLOG ItemDayLog[MAX_ITEMLIST];
 
-HFONT hFont = NULL;
-HFONT h;
-
-int x = 0;
-int y = 0;
-HDC hDC = NULL;
-
-void TextOutWind(char *str, int color)
+void TextOutWind(char *str)
 {
 	// Log to console instead of drawing to window
 	LOG_INFO("[GUI] {}", str);
@@ -107,52 +100,26 @@ void TextOutWind(char *str, int color)
 
 void DrawConfig()
 {
-	x = 0;
-	y = 0;
-
-	h = 0;
-
-	int VERMELHO = 255;
-	int PRETO = 0;
-
 	char String[1024];
-	int len = 0;
 
-	hDC = GetDC(hWndMain);
-
-	if (hDC == NULL)
-		return;
-
-	if (hFont == 0)
-		return;
-
-	if (SelectObject(hDC, hFont) != 0)
-		h = (HFONT)SelectObject(hDC, hFont);
-
-	
-	TextOutWind("Server Zone Status:", VERMELHO);
+	TextOutWind("Server Zone Status:");
 
 	for (int i = 0; i < MAX_SERVER; i++)
 	{
 		unsigned char *cIP = (unsigned char *)&(pUser[i].IP);
 
 		sprintf(String, " %d - IP: %3d. %3d. %3d. %3d  Socket: %3d  Guild: %4d %4d %4d %4d %4d  User: %4d    ", i, cIP[0], cIP[1], cIP[2], cIP[3], pUser[i].cSock.Sock, ChargedGuildList[i][0], ChargedGuildList[i][1], ChargedGuildList[i][2], ChargedGuildList[i][3], ChargedGuildList[i][4], pUser[i].Count);
-		TextOutWind(String, PRETO);
+		TextOutWind(String);
 	}
 	
-	TextOutWind("Admin Status:", VERMELHO);
+	TextOutWind("Admin Status:");
 	for (int i = 0; i < MAX_ADMIN; i++)
 	{
 		unsigned char *cIP = (unsigned char *)&(pAdmin[i].IP);
 
 		sprintf(String, "%2d - IP: %3d. %3d. %3d. %3d  Socket: %3d", i, cIP[0], cIP[1], cIP[2], cIP[3], pAdmin[i].cSock.Sock);
-		TextOutWind(String, PRETO);
+		TextOutWind(String);
 	}
-	
-	if (hFont && h)
-		h = (HFONT)SelectObject(hDC, h);
-
-	ReleaseDC(hWndMain, hDC);
 }
 
 int ReadTrandGuildInfo()
@@ -1270,18 +1237,12 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 	} break;
 
 	case WM_PAINT:
-		PAINTSTRUCT ps;
-		memset(&ps, 0, sizeof(PAINTSTRUCT));
-
-		BeginPaint(hWnd, &ps);
-
-		hFont = CreateFont(12, 0, 0, 0, FW_LIGHT, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEVICE_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, "Fixedsys"); // |FF_DECORATIVE
-
-		hDC = ps.hdc;
-
-		DrawConfig();
-
-		EndPaint(hWnd, &ps);
+		{
+			PAINTSTRUCT ps;
+			memset(&ps, 0, sizeof(PAINTSTRUCT));
+			BeginPaint(hWnd, &ps);
+			EndPaint(hWnd, &ps);
+		}
 		break; 
 
 	case WM_CLOSE:

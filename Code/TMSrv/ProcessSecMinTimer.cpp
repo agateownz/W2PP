@@ -58,13 +58,6 @@ void ProcessSecTimer()
 			{
 				Log("sys,server down complete", "-system", 0);
 
-				if (hFont != 0)
-				{
-					DeleteObject(hFont);
-
-					hFont = NULL;
-				}
-
 				PostQuitMessage(NULL);
 
 				return;

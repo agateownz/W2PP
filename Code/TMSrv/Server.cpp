@@ -254,7 +254,6 @@ int	   BillServerPort = 0;
 
 HWND  hWndMain;
 HMENU hMainMenu;
-HFONT hFont = NULL;
 
 FILE *fLogFile = NULL;
 FILE *fChatLogFile = NULL;
@@ -435,8 +434,6 @@ int kRanking2X = 195;
 int kRanking2Y = 4082;
 
 int TaxChanged[MAX_GUILDZONE] = { 0, 0, 0, 0, 0 };
-
-HDC hDC;
 
 //////////////////////////////////////
 
@@ -1120,121 +1117,42 @@ void DrawConfig(int wb)
 	if (ConfigReady == 0)
 		return;
 
-	int x = 0;
-	int y = 0;
-	HFONT h = 0;
-	
-	int color = 255;
-	int backcolor = 0;
-
 	char String[4096];
-	int len = 0;
-
-	hDC = GetDC(hWndMain);
-
-	if (hDC == NULL)
-		return;
-
-	if (hFont == 0)
-		return;
-
-	if (SelectObject(hDC, hFont) != 0)
-		h = (HFONT)SelectObject(hDC, hFont);
-
 	FILE *fp = NULL;
 
 	if (wb)
 		fp = fopen("gameconfig.txt", "w+");
 
-	SetTextColor(hDC, color);
-
 	sprintf(String, "Drop Item Event Settings:");
-	len = strlen(String);
-
-	TextOutA(hDC, x, y, String, len);
-
-	y += 16;
-
-	if (wb)
-		fprintf(fp, "%s\n", String);
-
-	SetTextColor(hDC, backcolor);
+	LOG_INFO("[CONFIG] {}", String);
+	if (wb) fprintf(fp, "%s\n", String);
 
 	sprintf(String,"   evindex %d   evdelete %d   evon %d   evitem %d   evrate %d   evstart %d %d %d %d",
 		evIndex, evDelete, evOn, evItem, evRate, evStartIndex, evCurrentIndex, evEndIndex, evNotice);
-	
-	len = strlen(String);
-
-	TextOutA(hDC, x, y, String, len);
-
-	y += 16;
-
-	if (wb)
-		fprintf(fp, "%s\n", String);
-
-	SetTextColor(hDC, color);
+	LOG_INFO("[CONFIG] {}", String);
+	if (wb) fprintf(fp, "%s\n", String);
 
 	sprintf(String, "Etc Event Settings:");
+	LOG_INFO("[CONFIG] {}", String);
+	if (wb) fprintf(fp, "%s\n", String);
 
-	len = strlen(String);
-	TextOutA(hDC, x, y, String, len);
-
-	y += 16;
-
-	if (wb)
-		fprintf(fp, "%s\n", String);
-
-	SetTextColor(hDC, backcolor);
 	sprintf(String, "   double %d   deadpoint %d   dungeonevent %d   statsapphire %d    battleroyal %d",
 		DOUBLEMODE, DEADPOINT, DUNGEONEVENT, StatSapphire, BRItem);
-	
-	len = strlen(String);
-	
-	TextOutA(hDC, x, y, String, len);
-
-	y += 16;
-
-	if (wb)
-		fprintf(fp, "%s\n", String);
-
-	SetTextColor(hDC, color);
+	LOG_INFO("[CONFIG] {}", String);
+	if (wb) fprintf(fp, "%s\n", String);
 
 	sprintf(String, "Billing Settings:");
-
-	len = strlen(String);
-	TextOutA(hDC, x, y, String, len);
-
-	y += 16;
-
-	if (wb)
-		fprintf(fp, "%s\n", String);
-
-	SetTextColor(hDC, backcolor);
+	LOG_INFO("[CONFIG] {}", String);
+	if (wb) fprintf(fp, "%s\n", String);
 
 	sprintf(String, "   billmode %d   freeexp %d   charselbill %d    potioncount %d   partybonus %d   guildboard %d",
 		BILLING, FREEEXP, CHARSELBILL, POTIONCOUNT, PARTYBONUS, GUILDBOARD);
-	
-	len = strlen(String);
-	TextOutA(hDC, x, y, String, len);
-
-	y += 16;
-
-	if (wb)
-		fprintf(fp, "%s\n", String);
-
-	SetTextColor(hDC, color);
+	LOG_INFO("[CONFIG] {}", String);
+	if (wb) fprintf(fp, "%s\n", String);
 
 	sprintf(String, "Item Drop Bonus Settings:");
-
-	len = strlen(String);
-	TextOutA(hDC, x, y, String, len);
-	
-	y += 16;
-
-	if (wb)
-		fprintf(fp, "%s\n", String);
-
-	SetTextColor(hDC, backcolor);
+	LOG_INFO("[CONFIG] {}", String);
+	if (wb) fprintf(fp, "%s\n", String);
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -1244,28 +1162,13 @@ void DrawConfig(int wb)
 			g_pDropBonus[4 + pos], g_pDropBonus[5 + pos], g_pDropBonus[6 + pos], g_pDropBonus[7 + pos],
 			g_pDropBonus[8 + pos], g_pDropBonus[9 + pos], g_pDropBonus[10 + pos], g_pDropBonus[11 + pos],
 			g_pDropBonus[12 + pos], g_pDropBonus[13 + pos], g_pDropBonus[14 + pos], g_pDropBonus[15 + pos]);
-
-		len = strlen(String);
-		TextOutA(hDC, x, y, String, len);
-
-		y += 16;
-
-		if (wb)
-			fprintf(fp, "%s\n", String);
+		LOG_INFO("[CONFIG] {}", String);
+		if (wb) fprintf(fp, "%s\n", String);
 	}
 
-	SetTextColor(hDC, color);
-
 	sprintf(String, "Treasure Settings:");
-	len = strlen(String);
-	
-	TextOutA(hDC, x, y, String, len);
-	y += 16;
-
-	if (wb)
-		fprintf(fp, "%s\n", String);
-
-	SetTextColor(hDC, backcolor);
+	LOG_INFO("[CONFIG] {}", String);
+	if (wb) fprintf(fp, "%s\n", String);
 	
 	for (int j = 0; j < 8; j++)
 	{
@@ -1280,53 +1183,23 @@ void DrawConfig(int wb)
 			sprintf(String, "%s  %-4d %2d %2d %2d %2d   ",
 				String, item->sIndex, item->stEffect[0].cEffect, item->stEffect[0].cValue, item->stEffect[1].cEffect, item->stEffect[1].cValue);
 		}
-		len = strlen(String);
-
-		TextOutA(hDC, x, y, String, len);
-		y += 16;
-
-		if (wb)
-			fprintf(fp, "%s\n", String);
+		LOG_INFO("[CONFIG] {}", String);
+		if (wb) fprintf(fp, "%s\n", String);
 		
 		sprintf(String, "       %-5d                %-5d                %-5d                %-5d                %-5d",
 			tr->Rate[0], tr->Rate[1], tr->Rate[2], tr->Rate[3], tr->Rate[4]);
-		
-		len = strlen(String);
-		TextOutA(hDC, x, y, String, len);
-		y += 16;
-		if (wb)
-			fprintf(fp, "%s\n", String);
+		LOG_INFO("[CONFIG] {}", String);
+		if (wb) fprintf(fp, "%s\n", String);
 	}
 
-	SetTextColor(hDC, color);
-
 	sprintf(String, "Etc Settings:");
+	LOG_INFO("[CONFIG] {}", String);
+	if (wb) fprintf(fp, "%s\n", String);
 
-	len = strlen(String);
-	TextOutA(hDC, x, y, String, len);
-
-	y += 16;
-
-	if (wb)
-		fprintf(fp, "%s\n", String);
-
-	SetTextColor(hDC, backcolor);
 	sprintf(String, "   partydif %d   kefrastatus %d   GTorreHour %d    RVRHour %d    DropItem %d   BRHour %d   maxNightmare %d   PotionDelay %d",
 		PARTY_DIF, KefraLive, GTorreHour, RvRHour, isDropItem, BRHour, maxNightmare, PotionDelay);
-
-	len = strlen(String);
-
-	TextOutA(hDC, x, y, String, len);
-
-	y += 16;
-
-	if (wb)
-		fprintf(fp, "%s\n", String);
-
-	if (hFont && h)
-		h = (HFONT)SelectObject(hDC, h);
-	
-	ReleaseDC(hWndMain, hDC);
+	LOG_INFO("[CONFIG] {}", String);
+	if (wb) fprintf(fp, "%s\n", String);
 
 	if (wb)
 		fclose(fp);
@@ -3471,8 +3344,6 @@ BOOL WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	if (!InitInstance(hInstance, nCmdShow))
 		return FALSE;
 
-	hFont = CreateFont(12, 0, 0, 0, FW_LIGHT, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEVICE_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, "Fixedsys"); // |FF_DECORATIVE
-
 	BASE_InitModuleDir();
 	BASE_InitializeHitRate();
 
@@ -4125,12 +3996,6 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 		}
 
 		CReadFiles::WriteGuild();
-
-		if (hFont)
-		{
-			DeleteObject(hFont);
-			hFont = NULL;
-		}
 
 		DefWindowProc(hWnd, message, wParam, lParam);
 
