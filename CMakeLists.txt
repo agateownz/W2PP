@@ -1,8 +1,16 @@
 cmake_minimum_required(VERSION 3.15)
+
+# Vcpkg integration - MUST be set before project()
+if(DEFINED ENV{VCPKG_ROOT})
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+endif()
+
 project(W2PP VERSION 1.0 LANGUAGES CXX)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Common include directories
@@ -23,8 +31,15 @@ set(COMMON_HEADERS
     "${PROJECT_SOURCE_DIR}/Code/ItemEffect.h"
 )
 
-# Common Windows libraries for server executables
+# Find packages from vcpkg
+# Note: asio is header-only and doesn't export targets the same way
+find_package(spdlog CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+
+# Common libraries for server executables
 set(COMMON_LIBS
+    spdlog::spdlog
+    fmt::fmt
     winmm.lib
     ws2_32.lib
     kernel32.lib
@@ -40,6 +55,12 @@ set(COMMON_LIBS
     odbc32.lib
     odbccp32.lib
 )
+
+# Add asio include directory (header-only library)
+set(ASIO_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
+if(EXISTS "${ASIO_INCLUDE_DIR}")
+    include_directories(${ASIO_INCLUDE_DIR})
+endif()
 
 # Suppress CRT secure warnings for all targets
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)

@@ -138,7 +138,7 @@ To perform a clean build:
 Remove-Item -Recurse -Force build
 
 # Reconfigure and rebuild
-cmake -B build -S . -G "Visual Studio 17 2022"
+cmake -B build -S . -G "Visual Studio 17 2022" -A Win32 -DCMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
 cmake --build build --config Release
 ```
 
