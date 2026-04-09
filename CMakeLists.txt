@@ -32,6 +32,8 @@ set(COMMON_SOURCES
     "${PROJECT_SOURCE_DIR}/Code/Basedef.cpp"
     "${PROJECT_SOURCE_DIR}/Code/CPSock.cpp"
     "${PROJECT_SOURCE_DIR}/Code/Common/Logger.cpp"
+    "${PROJECT_SOURCE_DIR}/Code/Common/AsioSocket.cpp"
+    "${PROJECT_SOURCE_DIR}/Code/Common/SocketEventHandler.cpp"
 )
 
 set(COMMON_HEADERS
@@ -39,6 +41,9 @@ set(COMMON_HEADERS
     "${PROJECT_SOURCE_DIR}/Code/CPSock.h"
     "${PROJECT_SOURCE_DIR}/Code/ItemEffect.h"
     "${PROJECT_SOURCE_DIR}/Code/Common/Logger.h"
+    "${PROJECT_SOURCE_DIR}/Code/Common/ISocket.h"
+    "${PROJECT_SOURCE_DIR}/Code/Common/AsioSocket.h"
+    "${PROJECT_SOURCE_DIR}/Code/Common/SocketEventHandler.h"
 )
 
 # Find packages from vcpkg
@@ -74,6 +79,9 @@ endif()
 
 # Suppress CRT secure warnings for all targets
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+
+# Prevent Windows.h from including winsock.h (we use winsock2.h)
+add_compile_definitions(_WINSOCKAPI_)
 
 # Enable UTF-8 source file encoding for all targets
 add_compile_options(/utf-8)

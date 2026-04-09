@@ -17,11 +17,42 @@
 *   Contact at:
 */
 
-#ifndef _CPSOCK_ // Last updated august 2012
+#ifndef _CPSOCK_ // Last updated Phase 3 - Socket Abstraction
 #define _CPSOCK_ 
 
-#include <Windows.h>
+// Platform detection
+#ifdef _WIN32
+    #include <winsock2.h>
+    #include <Windows.h>
+    typedef int socklen_t;
+#else
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    #include <unistd.h>
+    #include <fcntl.h>
+    #include <netdb.h>
+    #include <errno.h>
+    
+    typedef int SOCKET;
+    #define INVALID_SOCKET (-1)
+    #define SOCKET_ERROR (-1)
+    #define closesocket close
+    #define WSAGetLastError() errno
+    
+    // Windows message constants (for compatibility - not used on Linux)
+    #define WM_USER 0x0400
+    #define FD_ACCEPT 1
+    #define FD_READ 2
+    #define FD_WRITE 4
+    #define FD_CLOSE 8
+#endif
 
+#include <memory>
+#include "Common/ISocket.h"
+
+// Socket event messages (for compatibility with Windows message loop)
 #define WSA_READ            (WM_USER + 100)
 #define WSA_READDB          (WM_USER + 2) 
 #define WSA_ACCEPT          (WM_USER + 3) 
@@ -49,6 +80,12 @@ typedef struct _HEADER
 	unsigned int  ClientTick; 
 } HEADER, *PHEADER;
 
+// Forward declarations
+namespace W2PP {
+namespace Network {
+    class SocketEventHandler;
+}
+}
 
 class  CPSock
 {   
@@ -62,15 +99,33 @@ public:
 	int		nSentPosition;
 	int     Init;	
 
+private:
+    // New: Socket abstraction interface
+    std::shared_ptr<ISocket> m_socketImpl;
+    int m_wsaMessage;
+#ifdef _WIN32
+    HWND m_hWnd;
+#else
+    void* m_hWnd;
+#endif
+
 public:
 	CPSock();
 	~CPSock();
 
 	BOOL	CloseSocket			();
 	BOOL	WSAInitialize		();
-	SOCKET	StartListen			(HWND hWnd, int ip, int Port, int WSA);
-	SOCKET	ConnectServer		(char *HostAddr, int Port, int ip, int WSA);
-	SOCKET  ConnectBillServer	(char *HostAddr, int Port, int ip, int WSA);
+	
+    // Legacy signature for compatibility - hWnd and WSA are now optional/ignored
+#ifdef _WIN32
+    SOCKET	StartListen			(HWND hWnd, int ip, int Port, int WSA);
+    SOCKET	ConnectServer		(char *HostAddr, int Port, int ip, int WSA);
+    SOCKET  ConnectBillServer	(char *HostAddr, int Port, int ip, int WSA);
+#else
+    SOCKET	StartListen			(void* hWnd, int ip, int Port, int WSA);
+    SOCKET	ConnectServer		(char *HostAddr, int Port, int ip, int WSA);
+    SOCKET  ConnectBillServer	(char *HostAddr, int Port, int ip, int WSA);
+#endif
 
 	BOOL	Receive				();
 	char   *ReadMessage			(int *ErrorCode, int *ErrorType);
@@ -83,6 +138,14 @@ public:
 	void	RefreshSendBuffer	(void);
 	BOOL	SendBillMessage		(char * Msg);
 	char   *ReadBillMessage		(int *ErrorCode, int *ErrorType);
+
+    // New methods for async event handling
+    void SetEventCallback(int wsaMsg);
+    void OnSocketEvent(int eventType, int errorCode);
+
+private:
+    void InitializeBuffers();
+    void CleanupBuffers();
 };
 
 struct _AUTH_GAME // NEEDS TO BE FIXED ACCORDING TO WYD 1.2 6.13 SIZE IS 0xC4 (196)
@@ -90,45 +153,24 @@ struct _AUTH_GAME // NEEDS TO BE FIXED ACCORDING TO WYD 1.2 6.13 SIZE IS 0xC4 (1
 	char Unk[196];	
 };
 
-/* FROM TANTRA
-struct _AUTH_GAME{
-	int 	Packet_Type;	//	4
-	int		Result;			//	4 
-	char	S_KEY[32];		//	4*8	 
-	char	Session[32];	//  4*8
-	char	User_CC[4];		//	4
-	char	User_No[20];	//	4*5
-	char	User_ID[52];	//  4*13
-	char	User_IP[24];	//  4*6
-	char	User_Gender;	
-	char	User_Status[3];	//	4	
-	char	User_PayType[4];//	2 ?
-	int 	User_Age;		//  4
-	int 	Game_No;		//  4
-	char	Bill_PayType[2];
-	char	Bill_Method[2];	//	4
-	char	Bill_Expire[12];//	4*3 	
-	int 	Bill_Remain;	//	4
-};
-
-struct _AUTH_GAME2{
-	int 	Packet_Type;
-	int		Packet_result;
-	char	User_ID[52];
-	char	User_roleName[20];
-	int		Map_number;	
-	int		User_co[2];	
-	int		article_number;
-	int		Dressed;
-	int		Time_Exchanged;	
-	int		ItemNo;		
-	char	cardNumber[20];	
-	char	cardPassword[20];
-	char	messageflag[4];
-	char	activeMessage[20];	
-	char 	reserved[36];
-};*/
-
 #define g_cGame  (sizeof(_AUTH_GAME))
+
+// C-style helper functions for socket operations
+extern "C" {
+    // Initialize socket library
+    int Socket_Initialize();
+    
+    // Cleanup socket library
+    void Socket_Cleanup();
+    
+    // Get last socket error
+    int Socket_GetLastError();
+    
+    // Set socket to non-blocking mode
+    int Socket_SetNonBlocking(SOCKET sock);
+    
+    // Check if socket has data available (non-blocking check)
+    int Socket_HasData(SOCKET sock);
+}
 
 #endif

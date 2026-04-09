@@ -16,10 +16,9 @@
 *
 *   Contact at:
 */
-#include <Windows.h>
-
 #include "CUser.h"
 #include "Server.h"
+#include "Common/SocketEventHandler.h"
 
 
 CUser::CUser()
@@ -51,27 +50,29 @@ CUser::~CUser()
 BOOL CUser::AcceptUser(int ListenSocket)
 {
 	SOCKADDR_IN acc_sin; 
-	int Size = sizeof(acc_sin);
+	socklen_t Size = sizeof(acc_sin);
 
-	int tSock = accept(ListenSocket, (struct sockaddr FAR *)&acc_sin, (int FAR *)&(Size));
+	SOCKET tSock = accept(ListenSocket, (struct sockaddr *)&acc_sin, &Size);
 
-	if(tSock < 0) 
+	if(tSock == INVALID_SOCKET) 
 		return FALSE;
 
-	if(WSAAsyncSelect(tSock, hWndMain, WSA_READ, FD_READ | FD_CLOSE ) > 0) 
-	{	
-		closesocket(tSock);
+    // Set non-blocking mode
+    Socket_SetNonBlocking(tSock);
 
-		return FALSE;
-	}
+    // Register for async events with the new socket event handler
+    auto& handler = W2PP::Network::SocketEventHandler::GetInstance();
+    if (handler.IsRunning())
+    {
+        handler.RegisterSocket(tSock, WSA_READ);
+    }
 
-	cSock.Sock          = tSock;
+	cSock.Sock          = (unsigned int)tSock;
 	cSock.nRecvPosition = 0;
 	cSock.nProcPosition = 0;
 	cSock.nSendPosition = 0;
 
-	char *tmp  = inet_ntoa(acc_sin.sin_addr);
-	IP		   = acc_sin.sin_addr.S_un.S_addr;
+	IP		   = acc_sin.sin_addr.s_addr;
 	Mode	   = USER_ACCEPT;
 	Unk3	   = 0;
 

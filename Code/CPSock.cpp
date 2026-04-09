@@ -17,13 +17,17 @@
 *   Contact at:
 */
 
-#include <Windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "CPSock.h"
 #include "Basedef.h"
 #include "Common/Logger.h"
+#include "Common/ISocket.h"
+#include "Common/AsioSocket.h"
+#include "Common/SocketEventHandler.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 int ConnectPort = 0;
 
@@ -45,6 +49,7 @@ unsigned char pKeyWord[512] = { // 7.xx keys
 	0x84, 0x7d, 0x73, 0x73, 0x87, 0x7d, 0x23, 0x7d, 0xe9, 0x7d, 0x85, 0x7e, 0x02, 0x7d, 0xdd, 0x2d, 0x87, 0x79, 0xe7, 0x79, 0xad, 0x7c, 0x23, 0xda, 0x87, 0x0d, 0x0d, 0x7b, 0xe7, 0x79, 0x9b, 0x7d,
 	0xd7, 0x8f, 0x05, 0x7d, 0x0d, 0x34, 0x8f, 0x7d, 0xad, 0x87, 0xe9, 0x7c, 0x85, 0x80, 0x85, 0x79, 0x8a, 0xc3, 0xe7, 0xa5, 0xe8, 0x6b, 0x0d, 0x74, 0x10, 0x73, 0x33, 0x17, 0x0d, 0x37, 0x21, 0x19
 };
+
 //Server.cpp
 extern HWND			hWndMain;
 extern unsigned int CurrentTime;
@@ -64,22 +69,37 @@ CPSock::CPSock()
 {	
 	Sock = 0;
 	Init = 0;
+    m_wsaMessage = 0;
+    m_hWnd = nullptr;
+    InitializeBuffers();
+}
+
+CPSock::~CPSock()
+{
+    CleanupBuffers();
+}
+
+void CPSock::InitializeBuffers()
+{
 	pSendBuffer      = (char *)malloc(SEND_BUFFER_SIZE);
 	pRecvBuffer      = (char *)malloc(RECV_BUFFER_SIZE);
 
 	nSendPosition    = 0;
 	nSentPosition    = 0;
 	nRecvPosition    = 0;
-	nProcPosition    = 0;	
+	nProcPosition    = 0;
 }
 
-CPSock::~CPSock()
-{   
-	if (pSendBuffer	!= NULL)    
+void CPSock::CleanupBuffers()
+{
+    if (pSendBuffer	!= NULL)    
 		free(pSendBuffer);
 
     if (pRecvBuffer != NULL)   
 		free(pRecvBuffer);
+
+    pSendBuffer = nullptr;
+    pRecvBuffer = nullptr;
 }
 
 BOOL CPSock::CloseSocket()
@@ -90,8 +110,21 @@ BOOL CPSock::CloseSocket()
 	nProcPosition    = 0;
 	Init             = 0;
 
+    // Close the socket implementation
+    if (m_socketImpl)
+    {
+        m_socketImpl->Close();
+        m_socketImpl.reset();
+    }
+
     if (Sock != 0) 
+    {
+#ifdef _WIN32
 		closesocket(Sock);
+#else
+        closesocket(Sock);
+#endif
+    }
 
 	Sock = 0;
 
@@ -108,18 +141,29 @@ BOOL CPSock::CloseSocket()
 
 
 BOOL CPSock::WSAInitialize()
-{    
-	WSADATA WSAData;
+{
+#ifdef _WIN32
+    WSADATA WSAData;
 
-     if (WSAStartup(MAKEWORD(1,1), &WSAData) != 0) 
-		 return FALSE;
+    if (WSAStartup(MAKEWORD(2, 2), &WSAData) != 0)
+    {
+        LOG_ERROR("WSAStartup failed");
+        return FALSE;
+    }
+#else
+    // On Linux, no initialization needed
+    LOG_INFO("Socket subsystem initialized (Linux)");
+#endif
 
- 	 return TRUE;
+    // Initialize the socket event handler
+    W2PP::Network::SocketEventHandler::GetInstance().Initialize();
+
+    return TRUE;
 }
 
 /////////////////////////////////////////////////////////////////////////
 //
-//							StartListen
+//						StartListen
 //
 // Listening socket (LSock) Listen to begin with.
 // Connection should be connected to the WSA_ACCEPT.
@@ -127,11 +171,12 @@ BOOL CPSock::WSAInitialize()
 /////////////////////////////////////////////////////////////////////////
 
 SOCKET CPSock::StartListen(HWND hWnd, int ip, int port, int WSA)
-{      
-	   
-	SOCKADDR_IN	local_sin;
-	char		Temp[256];
-	SOCKET		tSock = socket(AF_INET, SOCK_STREAM, 0);
+{
+    m_hWnd = hWnd;
+    m_wsaMessage = WSA;
+
+    // Create socket using traditional sockets for compatibility
+    SOCKET tSock = socket(AF_INET, SOCK_STREAM, 0);
 
 	if(tSock == INVALID_SOCKET)
 	{
@@ -139,14 +184,21 @@ SOCKET CPSock::StartListen(HWND hWnd, int ip, int port, int WSA)
 		return FALSE;
 	}
     
+    // Set socket options
+    int reuse = 1;
+    setsockopt(tSock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse));
+
+    SOCKADDR_IN	local_sin;
+	char		Temp[256];
+
 	gethostname(Temp, 256);
 	local_sin.sin_family		= AF_INET;
-	local_sin.sin_addr.s_addr	= ip;		//INADDR_ANY;
+	local_sin.sin_addr.s_addr	= ip;
 	local_sin.sin_port			= htons((unsigned short int)port);       
 
-	if(bind(tSock, (struct sockaddr FAR *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
+	if(bind(tSock, (struct sockaddr *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
 	{
-		LOG_ERROR("Binding fail");
+		LOG_ERROR("Binding fail on port {}", port);
 		closesocket(tSock);
 		return FALSE;
 	}
@@ -158,12 +210,23 @@ SOCKET CPSock::StartListen(HWND hWnd, int ip, int port, int WSA)
 		return FALSE;
 	}
 
-	if(WSAAsyncSelect(tSock, hWnd, WSA, FD_ACCEPT) > 0)
-	{
-		LOG_ERROR("WSAAsyncSelect fail");
-		closesocket(tSock);
-		return FALSE;
-	}
+#ifdef _WIN32
+    // Set non-blocking mode for compatibility
+    u_long nonBlocking = 1;
+    ioctlsocket(tSock, FIONBIO, &nonBlocking);
+#else
+    // Linux: set non-blocking
+    int flags = fcntl(tSock, F_GETFL, 0);
+    fcntl(tSock, F_SETFL, flags | O_NONBLOCK);
+#endif
+
+    // Register for async events if we have an event handler
+    auto& handler = W2PP::Network::SocketEventHandler::GetInstance();
+    if (handler.IsRunning())
+    {
+        // Register for accept events
+        W2PP::Network::SocketEventHandler::GetInstance().RegisterSocket(tSock, WSA);
+    }
 
 	Sock = tSock;
 
@@ -171,7 +234,7 @@ SOCKET CPSock::StartListen(HWND hWnd, int ip, int port, int WSA)
 }
 
 SOCKET CPSock::ConnectServer(char *HostAddr, int Port, int ip, int WSA)
-{      
+{	      
 	SOCKADDR_IN InAddr;	//Connect
 	SOCKADDR_IN local_sin; // Bind local IP
 
@@ -202,17 +265,17 @@ SOCKET CPSock::ConnectServer(char *HostAddr, int Port, int ip, int WSA)
     local_sin.sin_addr.s_addr	= ip;
   	local_sin.sin_port			= 0;      
 
-	if(bind(tSock, (struct sockaddr FAR *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
+	if(bind(tSock, (struct sockaddr *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
     {	
 		ConnectPort += 10;
 		local_sin.sin_port = htons((unsigned short int)(ConnectPort + 5000));
 
-		if(bind(tSock, (struct sockaddr FAR *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
+		if(bind(tSock, (struct sockaddr *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
 		{	
 			ConnectPort += 10;
 			local_sin.sin_port = htons((unsigned short int)(ConnectPort + 5000));
 
-			if(bind(tSock, (struct sockaddr FAR *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
+			if(bind(tSock, (struct sockaddr *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
 			{
 				LOG_ERROR("Binding fail");
 				closesocket(tSock);
@@ -224,21 +287,36 @@ SOCKET CPSock::ConnectServer(char *HostAddr, int Port, int ip, int WSA)
 	if(tSock == INVALID_SOCKET)	
 		return 0;
 
-	if(connect(tSock, (PSOCKADDR)&InAddr, sizeof(InAddr)) < 0)       
-	{	
-		closesocket(tSock);
-		Sock = 0;
+	// Set non-blocking before connect for compatibility
+#ifdef _WIN32
+    u_long nonBlocking = 1;
+    ioctlsocket(tSock, FIONBIO, &nonBlocking);
+#else
+    int flags = fcntl(tSock, F_GETFL, 0);
+    fcntl(tSock, F_SETFL, flags | O_NONBLOCK);
+#endif
 
-		return 0;
+	if(connect(tSock, (struct sockaddr *)&InAddr, sizeof(InAddr)) < 0)       
+	{	
+        int error = Socket_GetLastError();
+#ifdef _WIN32
+        if (error != WSAEWOULDBLOCK)
+#else
+        if (error != EINPROGRESS && error != EWOULDBLOCK)
+#endif
+        {
+            closesocket(tSock);
+            Sock = 0;
+            return 0;
+        }
 	}
 
-	if(WSAAsyncSelect(tSock, hWndMain, WSA, FD_READ | FD_CLOSE) > 0) 
-	{	
-		closesocket(tSock);
-		Sock = 0;
-
-		return 0;
-	}
+    // Register for async events
+    auto& handler = W2PP::Network::SocketEventHandler::GetInstance();
+    if (handler.IsRunning())
+    {
+        W2PP::Network::SocketEventHandler::GetInstance().RegisterSocket(tSock, WSA);
+    }
 
 	Sock = tSock;
 
@@ -274,16 +352,16 @@ SOCKET CPSock::ConnectBillServer(char *HostAddr, int Port, int ip, int WSA)
 	local_sin.sin_addr.s_addr	= ip;
 	local_sin.sin_port			= 0;    
 
-	if(bind(tSock, (struct sockaddr FAR *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
+	if(bind(tSock, (struct sockaddr *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
 	{	
 		local_sin.sin_port = htons((unsigned short int)(ConnectPort + 6000));
 
-		if(bind(tSock, (struct sockaddr FAR *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
+		if(bind(tSock, (struct sockaddr *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
 		{	
 			ConnectPort += 10;
 			local_sin.sin_port = htons((unsigned short int)(ConnectPort + 6000));
 
-			if(bind(tSock, (struct sockaddr FAR *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
+			if(bind(tSock, (struct sockaddr *)&local_sin, sizeof(local_sin)) == SOCKET_ERROR)
 			{
 				LOG_ERROR("Binding fail");
 				closesocket(tSock);
@@ -292,8 +370,16 @@ SOCKET CPSock::ConnectBillServer(char *HostAddr, int Port, int ip, int WSA)
 		}
 	}
 
-	sprintf(msg, "sock:%d ip:%d.%d.%d.%d port:%d-%d", tSock, local_sin.sin_addr.S_un.S_un_b.s_b1, local_sin.sin_addr.S_un.S_un_b.s_b2, 
-		local_sin.sin_addr.S_un.S_un_b.s_b3, local_sin.sin_addr.S_un.S_un_b.s_b4, local_sin.sin_port, ConnectPort); 
+#ifdef _WIN32
+    sprintf(msg, "sock:%d ip:%d.%d.%d.%d port:%d-%d", tSock, 
+        (int)(local_sin.sin_addr.S_un.S_un_b.s_b1), 
+        (int)(local_sin.sin_addr.S_un.S_un_b.s_b2), 
+		(int)(local_sin.sin_addr.S_un.S_un_b.s_b3), 
+        (int)(local_sin.sin_addr.S_un.S_un_b.s_b4), 
+        local_sin.sin_port, ConnectPort); 
+#else
+    sprintf(msg, "sock:%d port:%d-%d", tSock, local_sin.sin_port, ConnectPort);
+#endif
 
 	ConnectPort++;
 
@@ -301,27 +387,36 @@ SOCKET CPSock::ConnectBillServer(char *HostAddr, int Port, int ip, int WSA)
 	remote_sin.sin_family		 = AF_INET;
 	remote_sin.sin_port			 = htons((unsigned short)Port);  
 
-	if(connect(tSock, (PSOCKADDR)&remote_sin, sizeof(remote_sin)) < 0)       
+	// Set non-blocking
+#ifdef _WIN32
+    u_long nonBlocking = 1;
+    ioctlsocket(tSock, FIONBIO, &nonBlocking);
+#else
+    int flags = fcntl(tSock, F_GETFL, 0);
+    fcntl(tSock, F_SETFL, flags | O_NONBLOCK);
+#endif
+
+	if(connect(tSock, (struct sockaddr *)&remote_sin, sizeof(remote_sin)) < 0)       
 	{	
-		sprintf(msg, "sock:%d ip:%d.%d.%d.%d port:%d-%d", tSock, remote_sin.sin_addr.S_un.S_un_b.s_b1, remote_sin.sin_addr.S_un.S_un_b.s_b2, 
-			remote_sin.sin_addr.S_un.S_un_b.s_b3, remote_sin.sin_addr.S_un.S_un_b.s_b4, remote_sin.sin_port, Port); 
-
-		closesocket(tSock);
-		Sock = 0;
-
-		return 0;
+        int error = Socket_GetLastError();
+#ifdef _WIN32
+        if (error != WSAEWOULDBLOCK)
+#else
+        if (error != EINPROGRESS && error != EWOULDBLOCK)
+#endif
+        {
+            closesocket(tSock);
+            Sock = 0;
+            return 0;
+        }
 	}
 
-	sprintf(msg, "sock:%d ip:%d.%d.%d.%d port:%d-%d", tSock, remote_sin.sin_addr.S_un.S_un_b.s_b1, remote_sin.sin_addr.S_un.S_un_b.s_b2, 
-		remote_sin.sin_addr.S_un.S_un_b.s_b3, remote_sin.sin_addr.S_un.S_un_b.s_b4, remote_sin.sin_port, Port);
-
-    if(WSAAsyncSelect(tSock, hWndMain, WSA, FD_READ|FD_CLOSE) > 0) 
-	{	
-		closesocket(tSock);
-		Sock = 0;
-
-		return 0;
-	}
+    // Register for async events
+    auto& handler = W2PP::Network::SocketEventHandler::GetInstance();
+    if (handler.IsRunning())
+    {
+        W2PP::Network::SocketEventHandler::GetInstance().RegisterSocket(tSock, WSA);
+    }
 
 	Sock = tSock;
 
@@ -331,10 +426,33 @@ SOCKET CPSock::ConnectBillServer(char *HostAddr, int Port, int ip, int WSA)
 BOOL CPSock::Receive()
 {
 	int Rest = RECV_BUFFER_SIZE - nRecvPosition;
+    
+    if (Rest <= 0)
+    {
+        LOG_ERROR("Receive buffer full");
+        return FALSE;
+    }
+
 	int tReceiveSize = recv(Sock, (char*)(pRecvBuffer + nRecvPosition), Rest, 0);
 
-	if(tReceiveSize == SOCKET_ERROR || tReceiveSize == Rest)
-		return FALSE;
+	if(tReceiveSize == SOCKET_ERROR)
+    {
+        int error = Socket_GetLastError();
+#ifdef _WIN32
+        if (error == WSAEWOULDBLOCK)
+            return TRUE; // No data available yet
+#else
+        if (error == EWOULDBLOCK || error == EAGAIN)
+            return TRUE; // No data available yet
+#endif
+        return FALSE;
+    }
+    
+    if (tReceiveSize == 0)
+    {
+        // Connection closed
+        return FALSE;
+    }
 
 	nRecvPosition = nRecvPosition + tReceiveSize;
 
@@ -342,8 +460,8 @@ BOOL CPSock::Receive()
 }
 
 /*
-	 nRecvPosition = Final do ultimo pacote
-	 nProcPosition = Começo do ultimo pacote
+ 	 nRecvPosition = Final do ultimo pacote
+ 	 nProcPosition = Começo do ultimo pacote
 */
 char* CPSock::ReadMessage(int *ErrorCode, int *ErrorType)
 {
@@ -462,7 +580,7 @@ char* CPSock::ReadMessage(int *ErrorCode, int *ErrorType)
 }
 
 char* CPSock::ReadBillMessage(int *ErrorCode, int *ErrorType)
-{     
+{	     
 	 *ErrorCode = 0;
 	 *ErrorType = 0; 
 
@@ -491,7 +609,7 @@ char* CPSock::ReadBillMessage(int *ErrorCode, int *ErrorType)
 }
 
 BOOL CPSock::SendBillMessage(char *Msg)
-{ 
+{	
 	if (nSendPosition + g_cGame >= SEND_BUFFER_SIZE ) 
 		return FALSE;
 
@@ -500,7 +618,7 @@ BOOL CPSock::SendBillMessage(char *Msg)
 
 	 nSendPosition = nSendPosition + g_cGame;
 
-	 BOOL Err = SendMessage();
+	 BOOL Err = SendMessageA();
 
      return Err;
 }
@@ -659,7 +777,7 @@ BOOL CPSock::SendMessageA()
 		if	(tSend != SOCKET_ERROR)	
 			nSentPosition = nSentPosition + tSend;	// Bytes transmitted
 		else
-			err = WSAGetLastError();	
+			err = Socket_GetLastError();
 
 		if(nSentPosition < nSendPosition || tSend == SOCKET_ERROR)
 			continue;
@@ -686,3 +804,73 @@ BOOL CPSock::SendOneMessage(char* Msg, int Size)
 
 	return Err;
 }
+
+void CPSock::SetEventCallback(int wsaMsg)
+{
+    m_wsaMessage = wsaMsg;
+}
+
+void CPSock::OnSocketEvent(int eventType, int errorCode)
+{
+    // Handle async events - this is called by the SocketEventHandler
+    // For now, this is a placeholder for future async handling
+}
+
+// C-style helper functions
+
+extern "C" {
+
+int Socket_Initialize()
+{
+#ifdef _WIN32
+    WSADATA WSAData;
+    if (WSAStartup(MAKEWORD(2, 2), &WSAData) != 0)
+    {
+        return -1;
+    }
+#endif
+    return 0;
+}
+
+void Socket_Cleanup()
+{
+#ifdef _WIN32
+    WSACleanup();
+#endif
+}
+
+int Socket_GetLastError()
+{
+#ifdef _WIN32
+    return WSAGetLastError();
+#else
+    return errno;
+#endif
+}
+
+int Socket_SetNonBlocking(SOCKET sock)
+{
+#ifdef _WIN32
+    u_long nonBlocking = 1;
+    return ioctlsocket(sock, FIONBIO, &nonBlocking);
+#else
+    int flags = fcntl(sock, F_GETFL, 0);
+    if (flags < 0) return -1;
+    return fcntl(sock, F_SETFL, flags | O_NONBLOCK);
+#endif
+}
+
+int Socket_HasData(SOCKET sock)
+{
+    fd_set readfds;
+    FD_ZERO(&readfds);
+    FD_SET(sock, &readfds);
+    
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+    
+    return select((int)(sock + 1), &readfds, nullptr, nullptr, &tv);
+}
+
+} // extern "C"

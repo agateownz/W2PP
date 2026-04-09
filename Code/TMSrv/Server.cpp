@@ -16,6 +16,11 @@
 *
 *   Contact at:
 */
+// Prevent Windows.h from including winsock.h (we use winsock2.h via Basedef.h)
+#ifndef _WINSOCKAPI_
+#define _WINSOCKAPI_
+#endif
+
 #include <Windows.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -1255,7 +1260,7 @@ int  SendBilling(int a1, char *a2, int a3, int a4)
 
 int  SendBilling2(_AUTH_GAME *m, int hostlong)
 {
-	*(u_long*)&m->Unk = htonl(hostlong);
+	// *(u_long*)&m->Unk = htonl(hostlong);
 
 	sprintf(m->Unk, "%d", ServerIndex + 10 * ServerGroup);
 

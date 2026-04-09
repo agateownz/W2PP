@@ -20,6 +20,12 @@
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
+
+// Prevent windows.h from including winsock.h (already included winsock2.h above)
+#ifndef _WINSOCKAPI_
+#define _WINSOCKAPI_
+#endif
+
 #include <windows.h>
 #include <windowsx.h>
 #include <stdlib.h>

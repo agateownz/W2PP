@@ -21,7 +21,13 @@
 #ifndef _BASEDEF_ // Last updated 27/01/2013
 #define _BASEDEF_
 
+// Prevent windows.h from including winsock.h (we use winsock2.h instead)
+#ifndef _WINSOCKAPI_
+#define _WINSOCKAPI_
+#endif
+
 #include <time.h>
+#include <winsock2.h>
 #include <Windows.h>
 
 #pragma region Defines
