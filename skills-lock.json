@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "cpp-coding-standards": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "78e483c066cbd04aabfff8d4d179494c6dd70140ce1dae4f8e53d8fdb080f7d0"
+    }
+  }
+}
