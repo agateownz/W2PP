@@ -78,6 +78,16 @@ cmake --build build --config Release --target TMSrv
 cmake --build build --config Release --target ClientPatch_v7662
 ```
 
+### Specify Custom Output Directory
+
+```powershell
+# Configure with custom output directory
+cmake -B build -S . -G "Visual Studio 17 2022" -A Win32 -DW2PP_RELEASE_PATH="path/to/release/folder"
+
+# Then build as usual
+cmake --build build --config Release
+```
+
 ## Build Outputs
 
 After a successful build, the outputs are located in:

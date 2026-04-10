@@ -87,11 +87,20 @@ target_include_directories(TMSrv PRIVATE
 
 target_link_libraries(TMSrv PRIVATE ${COMMON_LIBS})
 
-# TMSrv output directory (match MSVC layout: Build/Debug/Server/TMSrv/run/)
-set_target_properties(TMSrv PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Build/Debug/Server/TMSrv/run"
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Build/Release/Server/TMSrv/run"
-)
+# TMSrv output directory
+if(W2PP_RELEASE_PATH)
+    # Custom release path: W2PP_RELEASE_PATH/TMSrv/run/
+    set_target_properties(TMSrv PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${W2PP_RELEASE_PATH}/TMSrv/run"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${W2PP_RELEASE_PATH}/TMSrv/run"
+    )
+else()
+    # Default build path: Build/Debug/Server/TMSrv/run/
+    set_target_properties(TMSrv PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Build/Debug/Server/TMSrv/run"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Build/Release/Server/TMSrv/run"
+    )
+endif()
 
 # TMSrv compile definitions
 target_compile_definitions(TMSrv PRIVATE

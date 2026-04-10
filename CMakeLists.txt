@@ -34,6 +34,7 @@ set(COMMON_SOURCES
     "${PROJECT_SOURCE_DIR}/Code/Common/Logger.cpp"
     "${PROJECT_SOURCE_DIR}/Code/Common/AsioSocket.cpp"
     "${PROJECT_SOURCE_DIR}/Code/Common/SocketEventHandler.cpp"
+    "${PROJECT_SOURCE_DIR}/Code/Common/AsioEventLoop.cpp"
 )
 
 set(COMMON_HEADERS
@@ -44,6 +45,7 @@ set(COMMON_HEADERS
     "${PROJECT_SOURCE_DIR}/Code/Common/ISocket.h"
     "${PROJECT_SOURCE_DIR}/Code/Common/AsioSocket.h"
     "${PROJECT_SOURCE_DIR}/Code/Common/SocketEventHandler.h"
+    "${PROJECT_SOURCE_DIR}/Code/Common/AsioEventLoop.h"
 )
 
 # Find packages from vcpkg
@@ -90,6 +92,13 @@ add_compile_options(/utf-8)
 # (must be set before defining targets)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Build/Debug")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Build/Release")
+
+# Optional: Custom release output path for executables
+# Usage: cmake -B build -S . -DW2PP_RELEASE_PATH="E:/wyd/Release 762"
+set(W2PP_RELEASE_PATH "" CACHE PATH "Custom output path for built executables (e.g., E:/wyd/Release 762)")
+if(W2PP_RELEASE_PATH)
+    message(STATUS "W2PP Release path set to: ${W2PP_RELEASE_PATH}")
+endif()
 
 # Default to Windows subsystem for all executables
 set(CMAKE_WIN32_EXECUTABLE ON)

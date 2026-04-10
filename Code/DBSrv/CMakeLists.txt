@@ -20,11 +20,20 @@ target_include_directories(DBSrv PRIVATE
 
 target_link_libraries(DBSrv PRIVATE ${COMMON_LIBS})
 
-# DBSrv output directory (match MSVC layout: Build/Debug/Server/DBSrv/run/)
-set_target_properties(DBSrv PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Build/Debug/Server/DBSrv/run"
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Build/Release/Server/DBSrv/run"
-)
+# DBSrv output directory
+if(W2PP_RELEASE_PATH)
+    # Custom release path: W2PP_RELEASE_PATH/DBSrv/run/
+    set_target_properties(DBSrv PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${W2PP_RELEASE_PATH}/DBSrv/run"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${W2PP_RELEASE_PATH}/DBSrv/run"
+    )
+else()
+    # Default build path: Build/Debug/Server/DBSrv/run/
+    set_target_properties(DBSrv PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Build/Debug/Server/DBSrv/run"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Build/Release/Server/DBSrv/run"
+    )
+endif()
 
 # DBSrv compile definitions
 target_compile_definitions(DBSrv PRIVATE

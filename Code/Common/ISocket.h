@@ -89,7 +89,7 @@ public:
     virtual void SetEventCallback(SocketEventCallback callback) = 0;
 
     // Get current socket state
-    virtual SocketState GetState() const = 0;
+    virtual SocketState GetState() const noexcept = 0;
 
     // Get native socket handle (for compatibility during transition)
     virtual unsigned int GetNativeSocket() = 0;

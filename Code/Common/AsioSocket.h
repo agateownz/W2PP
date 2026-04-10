@@ -26,6 +26,7 @@
 #include <asio/ip/tcp.hpp>
 
 #include <atomic>
+#include <memory>
 #include <mutex>
 
 namespace W2PP {
@@ -35,7 +36,7 @@ namespace Network {
 class AsioSocketManager;
 
 // ASIO-based socket implementation
-class AsioSocket : public ISocket
+class AsioSocket : public ISocket, public std::enable_shared_from_this<AsioSocket>
 {
 public:
     AsioSocket(asio::io_context& ioContext);
@@ -51,7 +52,7 @@ public:
     int Send(const char* data, int size) override;
     int Receive(char* buffer, int maxSize) override;
     void SetEventCallback(SocketEventCallback callback) override;
-    SocketState GetState() const override;
+    SocketState GetState() const noexcept override;
     unsigned int GetNativeSocket() override;
     void SetNativeSocket(unsigned int sock) override;
     bool IsValid() const override;
@@ -99,11 +100,13 @@ public:
 
     // Get the ASIO io_context
     asio::io_context& GetIoContext() { return m_ioContext; }
+    const asio::io_context& GetIoContext() const { return m_ioContext; }
 
 private:
     asio::io_context m_ioContext;
-    std::atomic<bool> m_running;
-    std::unique_ptr<asio::io_context::work> m_work;
+    std::atomic<bool> m_running{false};
+    using WorkGuard = asio::executor_work_guard<asio::io_context::executor_type>;
+    std::unique_ptr<WorkGuard> m_workGuard;
 };
 
 } // namespace Network

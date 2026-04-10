@@ -26,12 +26,18 @@
 #include "Logger.h"
 
 #include <cstring>
+#include <mutex>
 
 namespace W2PP {
 namespace Network {
 
-// Global manager instance for factory methods
-static AsioSocketManager* g_manager = nullptr;
+// Global manager instance for factory methods - using Meyers' singleton pattern
+// for thread-safe initialization with atomic pointer for safe access
+static std::atomic<AsioSocketManager*>& GetManagerInstance()
+{
+    static std::atomic<AsioSocketManager*> instance{nullptr};
+    return instance;
+}
 
 // AsioSocket implementation
 
@@ -60,30 +66,30 @@ AsioSocket::~AsioSocket()
 
 bool AsioSocket::Initialize()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    
+    std::scoped_lock lock(m_mutex);
+
     if (m_state != SocketState::Disconnected)
     {
         return false;
     }
-    
+
     // Socket is created on demand
     return true;
 }
 
 void AsioSocket::Close()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    
+    std::scoped_lock lock(m_mutex);
+
     m_state = SocketState::Disconnected;
-    
+
     asio::error_code ec;
-    
+
     if (m_acceptor.is_open())
     {
         m_acceptor.close(ec);
     }
-    
+
     if (m_socket.is_open())
     {
         m_socket.close(ec);
@@ -92,12 +98,12 @@ void AsioSocket::Close()
 
 bool AsioSocket::Listen(const std::string& address, int port)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    
+    std::scoped_lock lock(m_mutex);
+
     try
     {
         asio::ip::tcp::endpoint endpoint;
-        
+
         if (address.empty() || address == "0.0.0.0")
         {
             endpoint = asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port);
@@ -107,12 +113,12 @@ bool AsioSocket::Listen(const std::string& address, int port)
             asio::ip::address addr = asio::ip::make_address(address);
             endpoint = asio::ip::tcp::endpoint(addr, port);
         }
-        
+
         m_acceptor.open(endpoint.protocol());
         m_acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
         m_acceptor.bind(endpoint);
         m_acceptor.listen(asio::socket_base::max_listen_connections);
-        
+
         m_state = SocketState::Listening;
         return true;
     }
@@ -126,25 +132,25 @@ bool AsioSocket::Listen(const std::string& address, int port)
 
 bool AsioSocket::Connect(const std::string& host, int port)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    
+    std::scoped_lock lock(m_mutex);
+
     try
     {
         asio::ip::tcp::resolver resolver(m_ioContext);
         auto endpoints = resolver.resolve(host, std::to_string(port));
-        
+
         m_state = SocketState::Connecting;
-        
+
         asio::error_code ec;
         asio::connect(m_socket, endpoints, ec);
-        
+
         if (ec)
         {
             HandleError(ec, "Connect");
             m_state = SocketState::Error;
             return false;
         }
-        
+
         m_state = SocketState::Connected;
         return true;
     }
@@ -158,18 +164,18 @@ bool AsioSocket::Connect(const std::string& host, int port)
 
 std::unique_ptr<ISocket> AsioSocket::Accept()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    
+    std::scoped_lock lock(m_mutex);
+
     if (m_state != SocketState::Listening)
     {
         return nullptr;
     }
-    
+
     try
     {
         asio::ip::tcp::socket peerSocket(m_ioContext);
         m_acceptor.accept(peerSocket);
-        
+
         return std::make_unique<AsioSocket>(m_ioContext, std::move(peerSocket));
     }
     catch (const std::exception& e)
@@ -181,18 +187,18 @@ std::unique_ptr<ISocket> AsioSocket::Accept()
 
 int AsioSocket::Send(const char* data, int size)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    
+    std::scoped_lock lock(m_mutex);
+
     if (!m_socket.is_open() || m_state != SocketState::Connected)
     {
         return -1;
     }
-    
+
     try
     {
         asio::error_code ec;
         size_t bytesSent = m_socket.write_some(asio::buffer(data, size), ec);
-        
+
         if (ec)
         {
             if (ec == asio::error::would_block)
@@ -202,7 +208,7 @@ int AsioSocket::Send(const char* data, int size)
             HandleError(ec, "Send");
             return -1;
         }
-        
+
         return static_cast<int>(bytesSent);
     }
     catch (const std::exception& e)
@@ -214,7 +220,7 @@ int AsioSocket::Send(const char* data, int size)
 
 int AsioSocket::Receive(char* buffer, int maxSize)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     
     if (!m_socket.is_open())
     {
@@ -252,18 +258,18 @@ int AsioSocket::Receive(char* buffer, int maxSize)
 
 void AsioSocket::SetEventCallback(SocketEventCallback callback)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     m_callback = callback;
 }
 
-SocketState AsioSocket::GetState() const
+SocketState AsioSocket::GetState() const noexcept
 {
     return m_state.load();
 }
 
 unsigned int AsioSocket::GetNativeSocket()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     
 #ifdef _WIN32
     return static_cast<unsigned int>(m_socket.native_handle());
@@ -274,7 +280,7 @@ unsigned int AsioSocket::GetNativeSocket()
 
 void AsioSocket::SetNativeSocket(unsigned int sock)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     
     // This is a compatibility method - on ASIO we can't easily set native socket
     // after creation. This would need platform-specific code.
@@ -283,13 +289,13 @@ void AsioSocket::SetNativeSocket(unsigned int sock)
 
 bool AsioSocket::IsValid() const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     return m_socket.is_open();
 }
 
 bool AsioSocket::GetLocalAddress(std::string& address, int& port) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     
     if (!m_socket.is_open())
     {
@@ -310,15 +316,21 @@ bool AsioSocket::GetLocalAddress(std::string& address, int& port) const
         port = endpoint.port();
         return true;
     }
+    catch (const std::exception& e)
+    {
+        LOG_ERROR("AsioSocket::GetLocalAddress failed: {}", e.what());
+        return false;
+    }
     catch (...)
     {
+        LOG_ERROR("AsioSocket::GetLocalAddress failed: unknown exception");
         return false;
     }
 }
 
 bool AsioSocket::GetRemoteAddress(std::string& address, int& port) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     
     if (!m_socket.is_open())
     {
@@ -339,15 +351,21 @@ bool AsioSocket::GetRemoteAddress(std::string& address, int& port) const
         port = endpoint.port();
         return true;
     }
+    catch (const std::exception& e)
+    {
+        LOG_ERROR("AsioSocket::GetRemoteAddress failed: {}", e.what());
+        return false;
+    }
     catch (...)
     {
+        LOG_ERROR("AsioSocket::GetRemoteAddress failed: unknown exception");
         return false;
     }
 }
 
 bool AsioSocket::SetNonBlocking(bool nonBlocking)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     
     if (!m_socket.is_open())
     {
@@ -360,8 +378,14 @@ bool AsioSocket::SetNonBlocking(bool nonBlocking)
         m_socket.non_blocking(nonBlocking, ec);
         return !ec;
     }
+    catch (const std::exception& e)
+    {
+        LOG_ERROR("AsioSocket::SetNonBlocking failed: {}", e.what());
+        return false;
+    }
     catch (...)
     {
+        LOG_ERROR("AsioSocket::SetNonBlocking failed: unknown exception");
         return false;
     }
 }
@@ -372,14 +396,16 @@ void AsioSocket::AsyncAccept()
     {
         return;
     }
-    
+
     // Create a new socket for the incoming connection
     auto newSocket = std::make_shared<asio::ip::tcp::socket>(m_ioContext);
-    
+
+    // Use shared_from_this to keep this socket alive during async operation
+    auto self = shared_from_this();
     m_acceptor.async_accept(*newSocket,
-        [this, newSocket](const asio::error_code& error)
+        [self, newSocket](const asio::error_code& error)
     {
-        OnAcceptComplete(error);
+        self->OnAcceptComplete(error);
     });
 }
 
@@ -389,12 +415,14 @@ void AsioSocket::AsyncRead()
     {
         return;
     }
-    
+
+    // Use shared_from_this to keep this socket alive during async operation
+    auto self = shared_from_this();
     m_socket.async_read_some(
         asio::buffer(m_readBuffer),
-        [this](const asio::error_code& error, size_t bytesRead)
+        [self](const asio::error_code& error, size_t bytesRead)
     {
-        OnReadComplete(error, bytesRead);
+        self->OnReadComplete(error, bytesRead);
     });
 }
 
@@ -404,14 +432,16 @@ void AsioSocket::AsyncWrite(const char* data, int size)
     {
         return;
     }
-    
+
     auto buffer = std::make_shared<std::vector<char>>(data, data + size);
-    
+
+    // Use shared_from_this to keep this socket alive during async operation
+    auto self = shared_from_this();
     m_socket.async_write_some(
         asio::buffer(*buffer),
-        [this, buffer](const asio::error_code& error, size_t bytesWritten)
+        [self, buffer](const asio::error_code& error, size_t bytesWritten)
     {
-        OnWriteComplete(error, bytesWritten);
+        self->OnWriteComplete(error, bytesWritten);
     });
 }
 
@@ -482,7 +512,7 @@ void AsioSocket::NotifyEvent(SocketEventType event, int errorCode)
     SocketEventCallback callback;
     
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::scoped_lock lock(m_mutex);
         callback = m_callback;
     }
     
@@ -502,29 +532,41 @@ AsioSocketManager::AsioSocketManager()
 AsioSocketManager::~AsioSocketManager()
 {
     Stop();
+    // Clear the global instance if this is the current manager
+    AsioSocketManager* expected = this;
+    GetManagerInstance().compare_exchange_strong(expected, nullptr,
+                                                  std::memory_order_release,
+                                                  std::memory_order_relaxed);
 }
 
 bool AsioSocketManager::Initialize()
 {
-    m_work = std::make_unique<asio::io_context::work>(m_ioContext);
+    m_workGuard = std::make_unique<WorkGuard>(m_ioContext.get_executor());
     return true;
 }
 
 void AsioSocketManager::Run()
 {
     m_running = true;
-    
+
     while (m_running)
     {
         try
         {
             m_ioContext.run();
+            break;  // Normal exit (no work remaining)
+        }
+        catch (const std::runtime_error& e)
+        {
+            // Recoverable runtime errors - log and continue
+            LOG_ERROR("AsioSocketManager::Run runtime error: {}", e.what());
         }
         catch (const std::exception& e)
         {
-            LOG_ERROR("AsioSocketManager::Run exception: {}", e.what());
+            // Other exceptions - log as fatal but continue running
+            LOG_ERROR("AsioSocketManager::Run fatal exception: {}", e.what());
         }
-        
+
         if (m_running)
         {
             // Restart if stopped due to no work
@@ -548,7 +590,7 @@ void AsioSocketManager::Poll()
 void AsioSocketManager::Stop()
 {
     m_running = false;
-    m_work.reset();
+    m_workGuard.reset();
     m_ioContext.stop();
 }
 
@@ -561,18 +603,19 @@ std::unique_ptr<ISocket> ISocket::Create()
 {
     // This should be provided with an io_context from the manager
     // For now, we need to ensure the manager is created first
-    if (!W2PP::Network::g_manager)
+    AsioSocketManager* manager = GetManagerInstance().load(std::memory_order_acquire);
+    if (!manager)
     {
         return nullptr;
     }
-    
+
     return std::make_unique<W2PP::Network::AsioSocket>(
-        W2PP::Network::g_manager->GetIoContext());
+        manager->GetIoContext());
 }
 
 std::unique_ptr<ISocketManager> ISocketManager::Create()
 {
     auto manager = std::make_unique<W2PP::Network::AsioSocketManager>();
-    W2PP::Network::g_manager = manager.get();
+    GetManagerInstance().store(manager.get(), std::memory_order_release);
     return manager;
 }
