@@ -218,7 +218,7 @@ void Exec_MSG_UseItem(int conn, char *pMsg)
 			pUser[conn].UseItemTime = GetTickCount();
 */
 
-#pragma region Refinar item Selado no inventário
+#pragma region Refinar item Selado no inventario
 			if (itemtype == 5)
 			{
 				if (sanc >= 9)
@@ -553,7 +553,7 @@ void Exec_MSG_UseItem(int conn, char *pMsg)
 				RateSucess = 90;
 			}
 
-			else if(dest->sIndex == 1754)//Dragão Lich
+			else if(dest->sIndex == 1754)//Dragao Lich
 			{
 				if(_rd < 3)
 					NextPedra = 1744;//Inteligencia
@@ -1194,7 +1194,7 @@ void Exec_MSG_UseItem(int conn, char *pMsg)
 		return;
 	}
 	#pragma endregion
-#pragma region Poção Kappa
+#pragma region Pocao Kappa
 	if (Vol == 10 || Vol == 55 || Vol == 200 || Vol == 201 || Vol == 56 || Vol == 52 || Vol == 53 || Vol == 57 || Vol == 202)
 	{
 		int value = 0;
@@ -1292,7 +1292,7 @@ void Exec_MSG_UseItem(int conn, char *pMsg)
 		else
 			memset(item, 0, sizeof(STRUCT_ITEM));
 
-		sprintf(temp, "useitem,poção_kappa affectslot:%d value:%d time:%d", EmptyAffect, value, tempo);
+		sprintf(temp, "useitem,pocao_kappa affectslot:%d value:%d time:%d", EmptyAffect, value, tempo);
 		ItemLog(temp, pUser[conn].AccountName, pUser[conn].IP);
 		return;
 	}
@@ -1430,7 +1430,7 @@ void Exec_MSG_UseItem(int conn, char *pMsg)
 		return;
 	}
 #pragma endregion
-#pragma region Rações
+#pragma region Racoes
 	if (Vol == 15)
 	{
 		if (m->DestType || m->DestPos != 14)
@@ -1511,12 +1511,12 @@ void Exec_MSG_UseItem(int conn, char *pMsg)
 			SendItem(conn, m->SourType, m->SourPos, item);
 		}
 
-		sprintf(temp, "useitem,ração mount:%d", mount);
+		sprintf(temp, "useitem,racao mount:%d", mount);
 		ItemLog(temp, pUser[conn].AccountName, pUser[conn].IP);
 		return;
 	}
 #pragma endregion
-#pragma region Âmago
+#pragma region Amago
 	if (Vol == 16)
 	{
 		if (m->DestType || m->DestPos != 14)
@@ -2263,7 +2263,7 @@ void Exec_MSG_UseItem(int conn, char *pMsg)
 		pMob[conn].MOB.Coin += CReadFiles::QuestCoin[thisQuest];
 		pMob[conn].MOB.Exp += QuestExp;
 
-#pragma region Log de Experiência diário
+#pragma region Log de Experiência diario
 		if (when.tm_yday != pMob[conn].extra.DayLog.YearDay)
 			pMob[conn].extra.DayLog.Exp = 0;
 
@@ -2307,7 +2307,7 @@ void Exec_MSG_UseItem(int conn, char *pMsg)
 			sprintf(temp, g_pMessageStringTable[_NS_GETEXP], QuestExpParty);
 			SendClientMessage(partyleader, temp);
 
-#pragma region Log de Experiência diário
+#pragma region Log de Experiência diario
 			if (when.tm_yday != pMob[partyleader].extra.DayLog.YearDay)
 				pMob[partyleader].extra.DayLog.Exp = 0;
 
@@ -2344,7 +2344,7 @@ void Exec_MSG_UseItem(int conn, char *pMsg)
 			{
 				pMob[partymember].MOB.Exp += QuestExpParty;
 
-#pragma region Log de Experiência diário
+#pragma region Log de Experiência diario
 				if (when.tm_yday != pMob[partymember].extra.DayLog.YearDay)
 					pMob[partymember].extra.DayLog.Exp = 0;
 
@@ -2863,7 +2863,7 @@ lbl_a_noparty:
 		return;
 	}
 #pragma endregion
-#pragma region Pedidos de caça
+#pragma region Pedidos de caca
 	if (Vol == 195)
 	{
 		if (item->sIndex < 3432 || item->sIndex > 3437)
@@ -3574,7 +3574,7 @@ lbl_a_noparty:
 		return;
 	}
 #pragma endregion
-#pragma region Remédio da Coragem
+#pragma region Remedio da Coragem
 	if (item->sIndex == 4046 || item->sIndex == 646)
 	{
 		int sAffect = GetEmptyAffect(conn, 30);
@@ -3642,7 +3642,7 @@ lbl_a_noparty:
 		return;
 	}
 #pragma endregion
-#pragma region Feijões mágicos - Removedor
+#pragma region Feijoes magicos - Removedor
 	if(Vol == 186)
 	{
 		STRUCT_ITEM *dest = GetItemPointer(&pMob[conn].MOB, pUser[conn].Cargo, m->DestType, m->DestPos);
@@ -3739,7 +3739,7 @@ lbl_a_noparty:
 		return;
 	}
 	#pragma endregion
-#pragma region Pergaminho do Perdão
+#pragma region Pergaminho do Perdao
 	if (Vol == 203)
 	{
 		SetPKPoint(conn, 150);
@@ -4224,7 +4224,7 @@ lbl_a_noparty:
 		return;
 	}
 #pragma endregion
-#pragma region Armazenagem - Recuperação
+#pragma region Armazenagem - Recuperacao
 	if(Vol == 243)
 	{
 		if(item->sIndex == 3203)
@@ -5024,7 +5024,7 @@ lbl_a_noparty:
 		return;
 	}
 #pragma endregion
-#pragma region Extração Elmo
+#pragma region Extracao Elmo
 	if (item->sIndex == 3021)
 	{
 		int extra = BASE_GetItemAbility(item, EF_ITEMLEVEL);
@@ -5076,7 +5076,7 @@ lbl_a_noparty:
 			SendEmotion(conn, 14, 3);
 			return;
 		}
-		//Extração de cythera
+		//Extracao de cythera
 
 		else 
 		{
@@ -5123,7 +5123,7 @@ lbl_a_noparty:
 		return;
 	}
 #pragma endregion
-#pragma region Extração Peito
+#pragma region Extracao Peito
 	if (item->sIndex == 3022)
 	{
 		int extra = BASE_GetItemAbility(item, EF_ITEMLEVEL);
@@ -5175,7 +5175,7 @@ lbl_a_noparty:
 			SendEmotion(conn, 14, 3);
 			return;
 		}
-		//Extração de item arch
+		//Extracao de item arch
 
 		else 
 		{
@@ -5221,7 +5221,7 @@ lbl_a_noparty:
 		return;
 	}
 #pragma endregion
-#pragma region Extração Calça
+#pragma region Extracao Calca
 	if (item->sIndex == 3023)
 	{
 		int extra = BASE_GetItemAbility(item, EF_ITEMLEVEL);
@@ -5273,7 +5273,7 @@ lbl_a_noparty:
 			SendEmotion(conn, 14, 3);
 			return;
 		}
-		//Extração de item arch
+		//Extracao de item arch
 
 		else 
 		{
@@ -5319,7 +5319,7 @@ lbl_a_noparty:
 		return;
 	}
 #pragma endregion
-#pragma region Extração Luva
+#pragma region Extracao Luva
 	if (item->sIndex == 3024)
 	{
 		int extra = BASE_GetItemAbility(item, EF_ITEMLEVEL);
@@ -5371,7 +5371,7 @@ lbl_a_noparty:
 			SendEmotion(conn, 14, 3);
 			return;
 		}
-		//Extração de item arch
+		//Extracao de item arch
 
 		else 
 		{
@@ -5417,7 +5417,7 @@ lbl_a_noparty:
 		return;
 	}
 #pragma endregion
-#pragma region Extração Bota
+#pragma region Extracao Bota
 	if (item->sIndex == 3025)
 	{
 		int extra = BASE_GetItemAbility(item, EF_ITEMLEVEL);
@@ -5475,7 +5475,7 @@ lbl_a_noparty:
 			SendEmotion(conn, 14, 3);
 			return;
 		}
-		//Extração de item arch
+		//Extracao de item arch
 
 		else 
 		{
@@ -5527,7 +5527,7 @@ lbl_a_noparty:
 		return;
 	}
 #pragma endregion
-#pragma region Extração Arma
+#pragma region Extracao Arma
 	if (item->sIndex == 3026)
 	{
 		int extra = BASE_GetItemAbility(item, EF_ITEMLEVEL);
@@ -5579,7 +5579,7 @@ lbl_a_noparty:
 			SendEmotion(conn, 14, 3);
 			return;
 		}
-		//Extração de item arch
+		//Extracao de item arch
 
 		else 
 		{

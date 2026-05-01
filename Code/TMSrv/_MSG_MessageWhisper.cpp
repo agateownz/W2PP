@@ -37,7 +37,7 @@ void Exec_MSG_MessageWhisper(int conn, char *pMsg)
 		return;
 	}
 #pragma endregion
-#pragma region /getout - Fim cidadão
+#pragma region /getout - Fim cidadao
 	else if (strcmp(m->MobName, "getout") == 0)
 	{
 		pMob[conn].extra.Citizen = 0;
@@ -1252,7 +1252,7 @@ void Exec_MSG_MessageWhisper(int conn, char *pMsg)
 			return;
 		}
 #pragma endregion
-#pragma region Chat Cidadão
+#pragma region Chat Cidadao
 		if (m->String[0] == '@')
 		{
 			if(pUser[conn].Message != 0)

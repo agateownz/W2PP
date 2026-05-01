@@ -1553,7 +1553,7 @@ lbl_PST1:
 
 	Sec4 = SecCounter % 4;
 
-#pragma region Ataque / fala em ação dos mobs
+#pragma region Ataque / fala em acao dos mobs
 	for (int index = Sec4 + MAX_USER; index < MAX_MOB; index += 4)
 	{
 		if (pMob[index].Mode != MOB_COMBAT)
@@ -1710,8 +1710,8 @@ lbl_PST1:
 			int skill = sm.SkillIndex;
 
 			//109 : Raio Vermelho
-			//110 : Empurrão
-			//111 : Chão de espinhos
+			//110 : Empurrao
+			//111 : Chao de espinhos
 			if(skill == 109 || skill == 110 || skill == 111)
 				goto KefraAttackLabel;
 			

@@ -36,7 +36,7 @@ void Exec_MSG_Attack(int conn, char *pMsg)
 		return;
 	}
 
-	//Personagem morto tentando usar uma skill que não é ressureição
+	//Personagem morto tentando usar uma skill que nao é ressureicao
 	if (pMob[conn].MOB.CurrentScore.Hp == 0 && m->SkillIndex != 99)
 	{
 		SendHpMode(conn);
@@ -604,7 +604,7 @@ void Exec_MSG_Attack(int conn, char *pMsg)
 			}
 #pragma endregion
 
-#pragma region Cura / Recuperação
+#pragma region Cura / Recuperacao
 			else if (InstanceType == 6)
 			{
 				if (pMob[idx].MOB.Clan == 4)
@@ -1226,7 +1226,7 @@ void Exec_MSG_Attack(int conn, char *pMsg)
 			}
 #pragma endregion
 
-#pragma region Transformação
+#pragma region Transformacao
 			if (skillnum == 64 || skillnum == 66 || skillnum == 68 || skillnum == 70 || skillnum == 71)
 			{
 				pMob[conn].GetCurrentScore(conn);
@@ -1235,7 +1235,7 @@ void Exec_MSG_Attack(int conn, char *pMsg)
 			}
 #pragma endregion
 
-#pragma region Book Ressureição
+#pragma region Book Ressureicao
 			if (pMob[conn].MOB.CurrentScore.Hp == 0 && skillnum == 99)
 			{
 				int rev = rand() % 115;
