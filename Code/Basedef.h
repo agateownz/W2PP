@@ -63,7 +63,7 @@
 #pragma region Account related defines
 
 #define		ACCOUNTNAME_LENGTH		16		// Max length of the account login
-#define		ACCOUNTPASS_LENGTH		12      // Max length of the account password
+#define		ACCOUNTPASS_LENGTH		16      // Max length of the account password
 #define		REALNAME_LENGTH			24      // Max length of the name of the account owner
 #define		EMAIL_LENGTH			48      // Max length of the email address of the account owner
 #define		ADDRESS_LENGTH			78      // Max length of the real address of the account owner
@@ -1091,14 +1091,12 @@ struct		 MSG_DBPrimaryAccount
 	unsigned int IP;
 };
 
+#pragma pack(push, 1)
 const short _MSG_DBCNFAccountLogin			= (22 | FLAG_DB2GAME);
 struct		 MSG_DBCNFAccountLogin // TODO : Check and rename if it's used for MSG_CNFAccountLogin, rename to MSG_CNFAccountLogin and change references in DB source
 {
 	_MSG;
-
 	char HashKeyTable[16];
-
-	int Unknow_28;
 
 	STRUCT_SELCHAR sel;
 	STRUCT_ITEM Cargo[MAX_CARGO];
@@ -1107,6 +1105,7 @@ struct		 MSG_DBCNFAccountLogin // TODO : Check and rename if it's used for MSG_C
 	char AccountName[ACCOUNTNAME_LENGTH];
 	char Keys[12];
 };
+#pragma pack(pop)
 
 const short _MSG_DBCNFCharacterLogin		= (23 | FLAG_DB2GAME);
 const short _MSG_DBCNFNewCharacter			= (24 | FLAG_DB2GAME);
@@ -1216,14 +1215,9 @@ struct		  MSG_AccountLogin
 
 	char AccountPassword[ACCOUNTPASS_LENGTH];
 	char AccountName[ACCOUNTNAME_LENGTH];
-
-	char Zero[52];
-
-
+	char Zero[52]; // TID
 	int  ClientVersion;
-
 	int  DBNeedSave;
-
 	int AdapterName[4];
 };
 struct		  MSG_AccountLogin_HWID

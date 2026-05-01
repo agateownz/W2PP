@@ -768,8 +768,6 @@ int CFileDB::ProcessMessage(char *Msg, int conn)
 			sm.Type = _MSG_DBCNFAccountLogin;
 			sm.ID = m->ID;
 
-			sm.Unknow_28 = 0xCCCCCCCC;
-
 			strncpy(sm.AccountName, file.Info.AccountName, ACCOUNTNAME_LENGTH);
 			memcpy(sm.Cargo, pAccountList[Idx].File.Cargo, sizeof(pAccountList[Idx].File.Cargo));
 
@@ -2621,7 +2619,7 @@ void CFileDB::DBGetSelChar(STRUCT_SELCHAR *sel, STRUCT_ACCOUNTFILE *file)
 		sel->Guild[i] = file->Char[i].Guild;
 
 		sel->SPX[i] = file->Char[i].SPX;
-		sel->SPX[i] = file->Char[i].SPY;
+		sel->SPY[i] = file->Char[i].SPY;
 
 		sel->Score[i] = file->Char[i].CurrentScore;		
 
