@@ -55,6 +55,9 @@ void Exec_MSG_UpdateItem(int conn, char *pMsg)
 	int gatestate2 = m->State;
 
 	int gatekey = BASE_GetItemAbility(&pItem[gateid].ITEM, EF_KEYID);
+    int i = 0;
+    int key = 0;
+    int Quest = -1;
 
 	if (state != 3 && gatestate2 != 3)
 		goto NoNeedKey;
@@ -62,10 +65,6 @@ void Exec_MSG_UpdateItem(int conn, char *pMsg)
 	if (gatekey == 0)
 		goto NoNeedKey;
 
-	int key = 0;
-	int Quest = -1;
-	
-	int i = 0;
 	for (i = 0; i < MAX_CARRY; i++)
 	{
 		key = BASE_GetItemAbility(&pMob[conn].MOB.Carry[i], EF_KEYID);

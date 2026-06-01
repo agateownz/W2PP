@@ -2862,7 +2862,7 @@ int GenerateSummon(int conn, int SummonID, STRUCT_ITEM *sItem, int Num)
 	return 1;
 }
 
-int CreateMob(char *MobName, int PosX, int PosY, char *folder, int Type)
+int CreateMob(const char *MobName, int PosX, int PosY, const char *folder, int Type)
 {
 	int tmob = GetEmptyNPCMob();
 
@@ -6668,7 +6668,7 @@ void StartLog()
 	LastLogDay = when.tm_mday;
 }
 
-void CrackLog(int conn, char *str)
+void CrackLog(int conn, const char *str)
 {
 	char AccountName[16];
 
@@ -6698,7 +6698,7 @@ void CrackLog(int conn, char *str)
 	SetWindowTextA(hWndMain, temp);
 }
 
-void Log(char *str1, char *str2, unsigned int ip)
+void Log(const char *str1, const char *str2, unsigned int ip)
 {
 	struct tm when;
 	time_t now;
@@ -6971,7 +6971,7 @@ int  GetLength(int x, int y)
 	return out;
 }
 
-int  ReadMob(STRUCT_MOB *mob, char *dir)
+int  ReadMob(STRUCT_MOB *mob, const char *dir)
 {
 	sprintf(temp, "./%s/%s", dir, mob->MobName);
 
@@ -9222,7 +9222,7 @@ void StartChatLog()
 	LastChatLogDay = when.tm_mday;
 }
 
-void ChatLog(char *str1, char *str2, unsigned int ip)
+void ChatLog(const char *str1, const char *str2, unsigned int ip)
 {
 	struct tm when;
 	time_t now;
@@ -9261,7 +9261,7 @@ void StartItemLog()
 	LastItemLogDay = when.tm_mday;
 }
 
-void ItemLog(char *str1, char *str2, unsigned int ip)
+void ItemLog(const char *str1, const char *str2, unsigned int ip)
 {
 	struct tm when;
 	time_t now;

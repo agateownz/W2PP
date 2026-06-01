@@ -1318,24 +1318,26 @@ void Exec_MSG_UseItem(int conn, char *pMsg)
 	{
 		unsigned char map_att = GetAttribute(pMob[conn].TargetX, pMob[conn].TargetY);
 
-		if((pMob[conn].TargetX/128) == 9 && (pMob[conn].TargetY/128) == 1)
-			goto CanSave;
+		bool canSave = false;
+                if ((pMob[conn].TargetX / 128) == 9 &&
+                    (pMob[conn].TargetY / 128) == 1)
+                  canSave = true;
 
-		if((pMob[conn].TargetX/128) == 8 && (pMob[conn].TargetY/128) == 2)
-			goto CanSave;
+		if ((pMob[conn].TargetX / 128) == 8 &&
+                    (pMob[conn].TargetY / 128) == 2)
+                  canSave = true;
 
-		if (map_att & 4 && pMob[conn].MOB.CurrentScore.Level < 1000)
+		if (!canSave && map_att & 4 && pMob[conn].MOB.CurrentScore.Level < 1000)
 		{
 			SendClientMessage(conn, g_pMessageStringTable[_NN_Cant_Use_That_Here]);
 			SendItem(conn, m->SourType, m->SourPos, item);
 			return;
 		}
-
 							 
 		int Arena = BASE_GetArena(pMob[conn].TargetX, pMob[conn].TargetY);
 		int Village = BASE_GetVillage(pMob[conn].TargetX, pMob[conn].TargetY);
 
-		if (Arena < MAX_GUILDZONE || Village < MAX_GUILDZONE)
+		if (!canSave || Arena < MAX_GUILDZONE || Village < MAX_GUILDZONE)
 		{
 			SendClientMessage(conn, g_pMessageStringTable[_NN_Cant_Use_That_Here]);
 			SendItem(conn, m->SourType, m->SourPos, item);

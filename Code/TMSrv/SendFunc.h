@@ -19,7 +19,7 @@
 #ifndef __SENDFUNC__
 #define __SENDFUNC__
 
-void SendClientMessage(int conn, char *Message);
+void SendClientMessage(int conn, const char *Message);
 void SendNotice(char *Message);
 void SendNoticeChief(char *Message);
 void SendSummonChief();

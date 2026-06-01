@@ -26,6 +26,9 @@
 
 #pragma region Defines
 
+// Macro to generate string from variable
+#define STRINGIFY(x) #x
+
 //#define PKDrop
 
 #define IDC_EXIT 9000
@@ -2387,11 +2390,11 @@ int  BASE_CanCargo(STRUCT_ITEM *item, STRUCT_ITEM *cargo, int DestX, int DestY);
 void BASE_SortTradeItem(STRUCT_ITEM *Item, int Type);
 int  BASE_CanTrade(STRUCT_ITEM *Dest, STRUCT_ITEM *Carry, unsigned char *MyTrade, STRUCT_ITEM *OpponentTrade, int MaxCarry);
 void BASE_InitializeMessage(char *file);
-void BASE_InitializeMobname(char *file, int offset);
+void BASE_InitializeMobname(const char *file, int offset);
 void BASE_WriteMessageBin();
 int  BASE_ReadMessageBin();
 void BASE_InitializeItemList();
-int  BASE_ReadItemListFile(char *filename, int Build);
+int  BASE_ReadItemListFile(const char *filename, int Build);
 void BASE_InitializeEffectName();
 void BASE_InitializeHitRate();
 int  BASE_UpdateItem(int maskidx, int CurrentState, int NextState, int xx, int yy, char *pHeight, int rotate, int *height);

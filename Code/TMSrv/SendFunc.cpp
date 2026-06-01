@@ -24,7 +24,7 @@
 #include "Server.h"
 #include "Language.h"
 
-void SendClientMessage(int conn, char *Message)
+void SendClientMessage(int conn, const char *Message)
 {
 	if (conn <= 0 || conn >= MAX_USER)
 		return;

@@ -291,6 +291,9 @@
     <ClCompile Include="CWarTower.cpp">
       <Filter>CWarTower</Filter>
     </ClCompile>
+    <ClCompile Include="DumpStruct.cpp">
+      <Filter>Base\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Basedef.h">
@@ -343,6 +346,9 @@
     </ClInclude>
     <ClInclude Include="CWarTower.h">
       <Filter>CWarTower</Filter>
+    </ClInclude>
+    <ClInclude Include="DumpStruct.h">
+      <Filter>Base\Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

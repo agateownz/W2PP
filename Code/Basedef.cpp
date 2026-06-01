@@ -4709,7 +4709,7 @@ void BASE_InitializeMessage(char *file)
 	fclose(fp);
 }
 
-void BASE_InitializeMobname(char *file, int offset)
+void BASE_InitializeMobname(const char *file, int offset)
 {
 	if(offset == 0)
 		memset(g_pEnglish, 0, 19200);
@@ -4984,7 +4984,7 @@ void BASE_InitializeItemList()
 	ret = BASE_ReadItemListFile(extraitem, 0);
 }
 
-int BASE_ReadItemListFile(char *filename, int Build)
+int BASE_ReadItemListFile(const char *filename, int Build)
 {
 	FILE *wfp = NULL;
 

@@ -98,7 +98,7 @@ void Exec_MSG_Buy(int conn, char *pMsg)
 		sprintf(temp, "%s comprou o item %s por %d donate e restou %d de donate..", pMob[conn].MOB.MobName, g_pItemList[itemIndex].Name, Donate, pUser[conn].Donate);
 		ItemLog(temp, pUser[conn].AccountName, pUser[conn].IP);
 
-		goto DonateBuy;
+		return;// previously goto DonateBuy;
 	}
 
 	int Price = g_pItemList[itemIndex].Price;
@@ -118,9 +118,8 @@ void Exec_MSG_Buy(int conn, char *pMsg)
 	if (Price < 0)
 		return;
 
-	int GuildTax = (Price - Price2) / 2;
 LABEL_BUY1:
-
+	int GuildTax = (Price - Price2) / 2;
 	int bPrice = Price;
 	int Desconto = 0;
 	int TargetVillage = BASE_GetVillage(pMob[TargetID].TargetX, pMob[TargetID].TargetY);
@@ -280,7 +279,7 @@ LABEL_BUY1:
 		pUser[conn].cSock.AddMessage((char*)m, m->Size);
 
 		SendEtc(conn);
-DonateBuy:
+//DonateBuy:
 
 		memcpy(&pMob[conn].MOB.Carry[MyInvenPos], ItemMob, sizeof(STRUCT_ITEM));
 		

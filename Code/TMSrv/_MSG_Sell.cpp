@@ -175,8 +175,8 @@ LABEL_S1:
 
 
 	int sVillage = BASE_GetVillage(pMob[sTargetID].TargetX, pMob[sTargetID].TargetY);
-	if (sVillage < 0 || sVillage > 5)
-		goto LABEL_S2;
+    
+	if (sVillage < 0 || sVillage > 5) return; // Previously: goto LABEL_S2;
 
 
 	int CityTax = g_pGuildZone[sVillage].CityTax;
@@ -209,8 +209,6 @@ LABEL_S1:
 				if (pMob[GuildImpostoID[4]].MOB.Exp < 20000000000000)
 					pMob[GuildImpostoID[4]].MOB.Exp += tcoin;
 			}
-
-		LABEL_S2:
 
 			if ((pMob[conn].MOB.Coin + sPrice) < 2000000000)
 				pMob[conn].MOB.Coin += sPrice;

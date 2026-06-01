@@ -60,6 +60,9 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_PACKET_DEBUG;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalOptions>/Zc:strictStrings- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -78,6 +81,9 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalOptions>/Zc:strictStrings- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -96,6 +102,7 @@
     <ClCompile Include="CReadFiles.cpp" />
     <ClCompile Include="CUser.cpp" />
     <ClCompile Include="CWarTower.cpp" />
+    <ClCompile Include="DumpStruct.cpp" />
     <ClCompile Include="GetFunc.cpp" />
     <ClCompile Include="imple.cpp" />
     <ClCompile Include="MobKilled.cpp" />
@@ -174,6 +181,7 @@
     <ClInclude Include="CReadFiles.h" />
     <ClInclude Include="CUser.h" />
     <ClInclude Include="CWarTower.h" />
+    <ClInclude Include="DumpStruct.h" />
     <ClInclude Include="GetFunc.h" />
     <ClInclude Include="Language.h" />
     <ClInclude Include="ProcessClientMessage.h" />

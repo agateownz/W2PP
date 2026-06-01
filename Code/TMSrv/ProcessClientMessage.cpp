@@ -34,6 +34,7 @@
 #include "ProcessClientMessage.h"
 #include "GetFunc.h"
 #include "SendFunc.h"
+#include "DumpStruct.h"
 
 void  ProcessClientMessage(int conn, char *pMsg, BOOL isServer)
 {
@@ -56,8 +57,10 @@ void  ProcessClientMessage(int conn, char *pMsg, BOOL isServer)
 	if (conn > 0 && conn < MAX_USER)
 		pUser[conn].LastReceiveTime = SecCounter;
 
-	if (std->Type == _MSG_Ping)
+	if (std->Type == _MSG_Ping) {
+        W2::DumpPacket(STRINGIFY(_MSG_Ping), std, std->Size, "Ping");
 		return;
+	}
 
 	// Checa se o pacote foi enviado por algum jogador e possui o timestamp de controle interno.
 	if (isServer == FALSE && std->ClientTick == SKIPCHECKTICK)
@@ -66,14 +69,19 @@ void  ProcessClientMessage(int conn, char *pMsg, BOOL isServer)
 	switch(std->Type)
 	{
 	case _MSG_AccountLogin:
+        W2::DumpPacket(STRINGIFY(_MSG_AccountLogin), pMsg, std->Size, "Accont Login");
 		Exec_MSG_AccountLogin(conn, pMsg);
 		break;
 
 	case _MSG_CharacterLogin:
+          W2::DumpPacket(STRINGIFY(_MSG_CharacterLogin), pMsg, std->Size,
+                        "Character Login");
 		Exec_MSG_CharacterLogin(conn, pMsg);
 		break;
 
 	case _MSG_CharacterLogout:
+          W2::DumpPacket(STRINGIFY(_MSG_CharacterLogout), pMsg, std->Size,
+                        "Character Logout");
 		Exec_MSG_CharacterLogout(conn, pMsg);
 		break;
 

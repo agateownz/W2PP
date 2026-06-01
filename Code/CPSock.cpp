@@ -512,13 +512,13 @@ BOOL CPSock::SendBillMessage(char *Msg)
 
 BOOL CPSock::AddMessage(char *pMsg, int Size)
 {
-	char temp[256];
+	//char temp[256];
 	HEADER *pSMsg = (HEADER *)pMsg;
 
 	if(nSendPosition + Size >= SEND_BUFFER_SIZE)	
 	{	
-		sprintf(temp, "err,add buffer full %d %d %d %d", nSendPosition, Size, pSMsg->Type, Sock);
-		Log(temp, "-system", 0);
+		//sprintf(temp, "err,add buffer full %d %d %d %d", nSendPosition, Size, pSMsg->Type, Sock);
+		//Log(temp, "-system", 0);
 
 		return FALSE;
 	}
@@ -526,8 +526,8 @@ BOOL CPSock::AddMessage(char *pMsg, int Size)
 	// check socket valid
 	if	(Sock <= 0)
 	{
-		sprintf(temp, "err,add buffer invalid %d %d %d %d", nSendPosition, Size, pSMsg->Type, Sock);
-		Log(temp, "-system", 0);
+		//sprintf(temp, "err,add buffer invalid %d %d %d %d", nSendPosition, Size, pSMsg->Type, Sock);
+		//Log(temp, "-system", 0);
 
 		return FALSE;
 	}
@@ -546,10 +546,10 @@ BOOL CPSock::AddMessage(char *pMsg, int Size)
 
 	if(BASE_CheckPacket(debug))
 	{
-		sprintf(temp, "**PACKET_DEBUG** Type:%d Size:%d", debug->Type, debug->Size);
-        Log(temp, "-system", 0);
+		//sprintf(temp, "**PACKET_DEBUG** Type:%d Size:%d", debug->Type, debug->Size);
+        //Log(temp, "-system", 0);
 	}
-#endif 
+#endif
 
 	unsigned char Sum1 = 0;
 	unsigned char Sum2 = 0;
@@ -634,8 +634,8 @@ BOOL CPSock::SendMessageA()
     if(nSendPosition > SEND_BUFFER_SIZE || nSendPosition < 0 || Sock < 0)
     {	
 		#ifdef  _PACKET_DEBUG
-		sprintf(temp, "err send1 %d %d %d", nSendPosition, nSentPosition, Sock);
-		Log(temp, "-system", 0);
+		//sprintf(temp, "err send1 %d %d %d", nSendPosition, nSentPosition, Sock);
+		//Log(temp, "-system", 0);
 		#endif
 
 		nSendPosition = 0;
@@ -647,8 +647,8 @@ BOOL CPSock::SendMessageA()
 	if(nSentPosition > nSendPosition || nSentPosition >= SEND_BUFFER_SIZE || nSentPosition < 0)
 	{	
 		#ifdef  _PACKET_DEBUG
-		sprintf(temp, "err send2 %d %d %d", nSendPosition, nSentPosition, Sock);
-		Log(temp, "-system", 0);
+		//sprintf(temp, "err send2 %d %d %d", nSendPosition, nSentPosition, Sock);
+		//Log(temp, "-system", 0);
 		#endif
 
 		nSendPosition = 0;
