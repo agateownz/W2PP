@@ -276,7 +276,7 @@ LABEL_BUY1:
 						 
 		m->ID = ESCENE_FIELD;
 						 
-		pUser[conn].cSock.AddMessage((char*)m, m->Size);
+		pUser[conn].AddMessage("_MSG_Buy (unknown?)", (char *)m, m->Size);
 
 		SendEtc(conn);
 //DonateBuy:

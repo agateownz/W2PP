@@ -21,6 +21,7 @@
 
 #include "..\Basedef.h"
 #include "..\CPSock.h"
+#include <source_location>
 
 //-------Connecting User Modes----------------------------------------------------------------------------
 #define USER_EMPTY       0 // There's no user on this slot
@@ -118,6 +119,15 @@ public:
 	~CUser();
 	int   AcceptUser(int ListenSocket);
 	int CloseUser();
+
+	BOOL AddMessage(
+            const char* name, const char* packet, size_t len,
+            const char* description = "", const std::source_location loc = std::source_location::current());
+
+	BOOL SendOneMessage(
+            const char* name, const char* packet, size_t len,
+            const char* description = "",
+            const std::source_location loc = std::source_location::current());
 };
 
 

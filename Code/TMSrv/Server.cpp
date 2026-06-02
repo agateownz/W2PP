@@ -8222,8 +8222,9 @@ void DoTeleport(int mob, int x, int y)
 
 		sm.Effect = 1; // teleport effect
 
-		if (mob < MAX_USER)
-			pUser[mob].cSock.AddMessage((char*)&sm, sizeof(MSG_Action));
+		if (mob < MAX_USER) {
+            pUser[mob].AddMessage(STRINGIFY(_MSG_Action), (char *)&sm, sizeof(MSG_Action), "DoTeleport");
+		}
 
 		GridMulticast(mob, x, y, (MSG_STANDARD*)&sm);
 	}

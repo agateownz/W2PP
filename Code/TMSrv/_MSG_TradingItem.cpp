@@ -327,7 +327,7 @@ void Exec_MSG_TradingItem(int conn, char *pMsg)
 
 			pMob[conn].GetCurrentScore(conn);
 
-			pUser[conn].cSock.AddMessage((char*)m, sizeof(MSG_TradingItem));
+			pUser[conn].AddMessage(STRINGIFY(MSG_TradingItem), (char*)m, sizeof(MSG_TradingItem));
 
 			if (!pMob[conn].MOB.Equip[6].sIndex)
 			{
@@ -342,7 +342,7 @@ void Exec_MSG_TradingItem(int conn, char *pMsg)
 						m->SrcPlace = ITEM_PLACE_EQUIP;
 						m->SrcSlot = 7;
 
-						pUser[conn].cSock.AddMessage((char*)m, sizeof(MSG_TradingItem));
+						pUser[conn].AddMessage(STRINGIFY(MSG_TradingItem), (char*)m, sizeof(MSG_TradingItem));
 
 						pMob[conn].MOB.Equip[6] = pMob[conn].MOB.Equip[7];
 

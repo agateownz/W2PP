@@ -223,7 +223,7 @@ LABEL_S1:
 
 			BASE_ClearItem(Item);
 							  
-			pUser[conn].cSock.AddMessage((char*)m, sizeof(MSG_Sell));
+			pUser[conn].AddMessage(STRINGIFY(MSG_Sell), (char*)m, sizeof(MSG_Sell));
 
 			if (isEquip)
 				SendEquip(conn, conn);

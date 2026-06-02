@@ -1343,7 +1343,7 @@ void Exec_MSG_UseItem(int conn, char *pMsg)
 			SendItem(conn, m->SourType, m->SourPos, item);
 			return;
 		}
-	CanSave:
+
 		int sFace = pMob[conn].MOB.Equip[0].sIndex / 10;
 							
 		if (sFace == 0)
@@ -1658,7 +1658,7 @@ void Exec_MSG_UseItem(int conn, char *pMsg)
 			sm_gbo.Parm2 = GUILDBOARD;
 			sm_gbo.Size = sizeof(MSG_STANDARDPARM2);
 
-			pUser[conn].cSock.AddMessage((char*)&sm_gbo, sizeof(MSG_STANDARDPARM2));
+			pUser[conn].AddMessage(STRINGIFY(_MSG_GuildBoard), (char *)&sm_gbo, sizeof(MSG_STANDARDPARM2));
 		}
 
 		return;
@@ -3150,7 +3150,7 @@ lbl_a_noparty:
 		memcpy(sm_sss.Skill1, pMob[conn].extra.SaveCelestial[ncl].SkillBar1, 4);
 		memcpy(sm_sss.Skill2, pMob[conn].extra.SaveCelestial[ncl].SkillBar2, 16);
 
-		pUser[conn].cSock.AddMessage((char*)&sm_sss, sizeof(MSG_SetShortSkill));
+		pUser[conn].AddMessage(STRINGIFY(_MSG_SetShortSkill), (char*)&sm_sss, sizeof(MSG_SetShortSkill));
 
 		BASE_GetBonusSkillPoint(&pMob[conn].MOB, &pMob[conn].extra);
 		BASE_GetBonusScorePoint(&pMob[conn].MOB, &pMob[conn].extra);

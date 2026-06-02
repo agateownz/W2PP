@@ -956,7 +956,7 @@ void Exec_MSG_Attack(int conn, char *pMsg)
 
 					sm_act.Effect = 2;
 					sm_act.Speed = 6;
-					pUser[idx].cSock.AddMessage((char*)&sm_act, sizeof(MSG_Action));
+                    pUser[idx].AddMessage(STRINGIFY(MSG_Action), (char*)&sm_act, sizeof(MSG_Action));
 				}
 
 				if (idx >= MAX_USER)
@@ -997,7 +997,7 @@ void Exec_MSG_Attack(int conn, char *pMsg)
 					GridMulticast(idx, PosX, PosY, (MSG_STANDARD*)&sm_act);
 
 					if (idx < MAX_USER)
-						pUser[idx].cSock.AddMessage((char*)&sm_act, sizeof(MSG_Action));
+						pUser[idx].AddMessage(STRINGIFY(MSG_Action), (char*)&sm_act, sizeof(MSG_Action));
 
 					memset(&sm_act, 0, sizeof(MSG_Action));
 					GetAction(conn, PosX, PosY, &sm_act);
@@ -1006,7 +1006,7 @@ void Exec_MSG_Attack(int conn, char *pMsg)
 					sm_act.Speed = 2;
 
 					GridMulticast(conn, PosX, PosY, (MSG_STANDARD*)&sm_act);
-					pUser[conn].cSock.AddMessage((char*)&sm_act, sizeof(MSG_Action));
+                    pUser[conn].AddMessage(STRINGIFY(MSG_Action), (char*)&sm_act, sizeof(MSG_Action));
 				}
 			}
 #pragma endregion

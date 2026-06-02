@@ -20,6 +20,7 @@
 
 #include "CUser.h"
 #include "Server.h"
+#include "DumpStruct.h"
 
 
 CUser::CUser()
@@ -89,4 +90,24 @@ int CUser::CloseUser()
 	 AccountName[0] = 0;
 
 	 return TRUE;
+}
+
+BOOL CUser::AddMessage(
+    const char* name, const char* packet, size_t len,
+    const char* description,
+    const std::source_location loc
+) {
+  W2::DumpPacket(name, packet, len, W2::PacketDirection::SERVER2CLIENT,
+                 description, loc);
+  return this->cSock.AddMessage((char*)packet, len);
+}
+
+BOOL CUser::SendOneMessage(
+	const char* name, const char* packet, size_t len,
+	const char* description,
+	const std::source_location loc)
+{
+  W2::DumpPacket(name, packet, len, W2::PacketDirection::SERVER2CLIENT,
+                 description, loc);
+  return this->cSock.SendOneMessage((char*)packet, len);
 }

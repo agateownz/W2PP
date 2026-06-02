@@ -41,7 +41,7 @@ void SendClientMessage(int conn, const char *Message)
 	sm_mp.String[MESSAGE_LENGTH - 1] = 0;
 	sm_mp.String[MESSAGE_LENGTH - 2] = 0;
 
-	pUser[conn].cSock.AddMessage((char*)&sm_mp, sizeof(MSG_MessagePanel));
+	pUser[conn].AddMessage(STRINGIFY(_MSG_MessagePanel), (char*)&sm_mp, sizeof(MSG_MessagePanel));
 }
 
 void SendNotice(char *Message)
@@ -191,7 +191,7 @@ void SendClientMessageOk(int conn, char *Message, int Useless1, int Useless2) //
 	sm_mbo.Useless1 = Useless1;
 	sm_mbo.Useless2 = Useless2;
 
-	pUser[conn].cSock.AddMessage((char*)&sm_mbo, sizeof(MSG_MessageBoxOk));
+	pUser[conn].AddMessage(STRINGIFY(_MSG_MessageBoxOk), (char*)&sm_mbo, sizeof(MSG_MessageBoxOk));
 }
 
 void SendClientSignal(int conn, int id, unsigned short signal)
@@ -202,7 +202,7 @@ void SendClientSignal(int conn, int id, unsigned short signal)
 	sm.Type = signal;
 	sm.ID = id;
 
-	pUser[conn].cSock.AddMessage((char*)&sm, sizeof(sm));
+	pUser[conn].AddMessage("SendClientSignal", (char *)&sm, sizeof(sm));
 }
 
 void SendClientSignalParm(int conn, int id, unsigned short signal, int parm)
@@ -214,7 +214,7 @@ void SendClientSignalParm(int conn, int id, unsigned short signal, int parm)
 	sm.ID = id;
 	sm.Parm = parm;
 
-	pUser[conn].cSock.AddMessage((char*)&sm, sizeof(sm));
+	pUser[conn].AddMessage("SendClientSignalParm", (char *)&sm, sizeof(sm));
 }
 
 void SendClientSignalParm2(int conn, int id, unsigned short signal, int parm, int parm2)
@@ -227,7 +227,7 @@ void SendClientSignalParm2(int conn, int id, unsigned short signal, int parm, in
 	sm.Parm1 = parm;
 	sm.Parm2 = parm2;
 
-	pUser[conn].cSock.AddMessage((char*)&sm, sizeof(sm));
+	pUser[conn].AddMessage("SendClientSignalParm2", (char *)&sm, sizeof(sm));
 }
 
 void SendClientSignalParm3(int conn, int id, unsigned short signal, int parm, int parm2, int parm3)
@@ -241,7 +241,7 @@ void SendClientSignalParm3(int conn, int id, unsigned short signal, int parm, in
 	sm.Parm2 = parm2;
 	sm.Parm3 = parm3;
 
-	pUser[conn].cSock.AddMessage((char*)&sm, sizeof(sm));
+	pUser[conn].AddMessage("SendClientSignalParm3", (char *)&sm, sizeof(sm));
 }
 
 void SendClientSignalShortParm2(int conn, int id, unsigned short signal, int parm, int parm2)
@@ -254,7 +254,7 @@ void SendClientSignalShortParm2(int conn, int id, unsigned short signal, int par
 	sm.Parm1 = parm;
 	sm.Parm2 = parm2;
 
-	pUser[conn].cSock.AddMessage((char*)&sm, sizeof(sm));
+	pUser[conn].AddMessage("SendClientSignalShortParm2", (char *)&sm, sizeof(sm));
 }
 
 void SyncMulticast(int conn, MSG_STANDARD *m, int bSend)
@@ -263,7 +263,7 @@ void SyncMulticast(int conn, MSG_STANDARD *m, int bSend)
 	{
 		if (pUser[i].Mode == USER_PLAY && conn != i)
 		{
-			pUser[i].cSock.AddMessage((char*)m, m->Size);
+            pUser[i].AddMessage("SyncMulticast", (char *)m, m->Size);
 
 			if (bSend)
 				pUser[i].cSock.SendMessageA();
@@ -277,7 +277,7 @@ void SyncKingdomMulticast(int conn, int Kingdom, MSG_STANDARD *m, int bSend)
 	{
 		if (pUser[i].Mode == USER_PLAY && conn != i && pMob[i].MOB.Clan == Kingdom && pUser[i].KingChat == 0)
 		{
-			pUser[i].cSock.AddMessage((char*)m, m->Size);
+            pUser[i].AddMessage("SyncKingdomMulticast", (char *)m, m->Size);
 
 			if (bSend)
 				pUser[i].cSock.SendMessageA();
@@ -305,7 +305,7 @@ void SendCreateMob(int conn, int otherconn, int bSend)
 	{
 		GetCreateMob(otherconn, &sm);
 
-		if (pUser[conn].cSock.AddMessage((char*)&sm, sizeof(MSG_CreateMob)))
+		if (pUser[conn].AddMessage(STRINGIFY(_MSG_CreateMob), (char*)&sm, sizeof(MSG_CreateMob)))
 			pUser[conn].cSock.SendMessageA();
 
 		return;
@@ -313,7 +313,7 @@ void SendCreateMob(int conn, int otherconn, int bSend)
 
 	GetCreateMobTrade(otherconn, &sm2);
 
-	if (pUser[conn].cSock.AddMessage((char*)&sm2, sizeof(MSG_CreateMobTrade)))
+	if (pUser[conn].AddMessage(STRINGIFY(_MSG_CreateMobTrade), (char*)&sm2, sizeof(MSG_CreateMobTrade)))
 		pUser[conn].cSock.SendMessageA();
 }
 
@@ -324,7 +324,7 @@ void SendCreateItem(int conn, int item, int bSend)
 
 	GetCreateItem(item, &sm);
 	
-	pUser[conn].cSock.AddMessage((char*)&sm, sizeof(MSG_CreateItem));
+	pUser[conn].AddMessage(STRINGIFY(_MSG_CreateItem), (char*)&sm, sizeof(MSG_CreateItem));
 
 	if (bSend)
 		pUser[conn].cSock.SendMessageA();
@@ -501,7 +501,7 @@ void SendRemoveMob(int dest, int sour, int Type, int bSend)
 	sm.ID = sour;
 	sm.RemoveType = Type;
 
-	pUser[dest].cSock.AddMessage((char*)&sm, sizeof(MSG_RemoveMob));
+	pUser[dest].AddMessage(STRINGIFY(_MSG_RemoveMob), (char*)&sm, sizeof(MSG_RemoveMob));
 
 	if (bSend)
 		pUser[dest].cSock.SendMessageA();
@@ -518,7 +518,7 @@ void SendRemoveItem(int dest, int itemid, int bSend)
 	sm_deci.ItemID = 10000 + itemid;
 	sm_deci.unk = 0;
 
-	pUser[dest].cSock.AddMessage((char*)&sm_deci, sizeof(MSG_DecayItem));
+	pUser[dest].AddMessage(STRINGIFY(_MSG_DecayItem), (char*)&sm_deci, sizeof(MSG_DecayItem));
 
 	if (bSend)
 		pUser[dest].cSock.SendMessageA();
@@ -553,7 +553,7 @@ void SendAutoTrade(int conn, int otherconn)
 	sm.Type = _MSG_SendAutoTrade;
 	sm.Size = sizeof(MSG_SendAutoTrade);
 
-	if (!pUser[conn].cSock.AddMessage((char*)&sm, sizeof(MSG_UpdateCarry)))
+	if (!pUser[conn].AddMessage(STRINGIFY(_MSG_SendAutoTrade), (char *)&sm, sizeof(MSG_SendAutoTrade)))
 		CloseUser(conn);
 }
 
@@ -711,7 +711,7 @@ void GridMulticast(int conn, int tx, int ty, MSG_STANDARD *msg)
 				continue;
 
 			if (msg != NULL && tmob < MAX_USER)
-				pUser[tmob].cSock.AddMessage((char*)msg, msg->Size);
+				pUser[tmob].AddMessage("GridMulticast", (char *)msg, msg->Size);
 
 			if (x < tx1 || x >= tx2 || y < ty1 || y >= ty2 && tx)
 			{
@@ -796,7 +796,7 @@ void GridMulticast(int conn, int tx, int ty, MSG_STANDARD *msg)
 
 					if (msg != NULL && tmob > 0 && tmob < MAX_USER)
 					{
-						if (pUser[tmob].cSock.AddMessage((char*)msg, msg->Size) == 0)
+                        if (pUser[tmob].AddMessage("GridMulticast", (char *)msg, msg->Size) == 0)
 						{
 							pUser[tmob].AccountName[ACCOUNTNAME_LENGTH - 1] = 0;
 							pUser[tmob].AccountName[ACCOUNTNAME_LENGTH - 2] = 0;
@@ -965,7 +965,7 @@ void GridMulticast(int tx, int ty, MSG_STANDARD *msg, int skip)
 					}
 				}
 
-				pUser[tmob].cSock.AddMessage((char*)msg, msg->Size);
+				pUser[tmob].AddMessage("GridMulticast", (char *)msg, msg->Size);
 			}
 		}
 	}
@@ -1018,7 +1018,7 @@ void PartyGridMulticast(int tx, int ty, MSG_STANDARD *msg, int skip, int Leaderc
 					if (pUser[tmob].Mode != USER_PLAY || pUser[tmob].cSock.Sock == 0)
 						continue;
 
-					pUser[tmob].cSock.AddMessage((char*)msg, msg->Size);
+					pUser[tmob].AddMessage("PartyGridMulticast", (char *)msg, msg->Size);
 				}
 			}
 		}
@@ -1026,8 +1026,9 @@ void PartyGridMulticast(int tx, int ty, MSG_STANDARD *msg, int skip, int Leaderc
 
 	if (Leaderconn > 0 && Leaderconn < MAX_USER && pUser[Leaderconn].Mode == USER_PLAY)
 	{
-		if (Leaderconn != skip)
-			pUser[Leaderconn].cSock.AddMessage((char*)msg, msg->Size);
+        if (Leaderconn != skip) {
+			pUser[Leaderconn].AddMessage("PartyGridMulticast", (char *)msg, msg->Size);
+        }
 
 		for (int i = 0; i < MAX_PARTY; i++)
 		{
@@ -1046,7 +1047,7 @@ void PartyGridMulticast(int tx, int ty, MSG_STANDARD *msg, int skip, int Leaderc
 			if (pUser[partyconn].Mode != USER_PLAY || pUser[partyconn].cSock.Sock == 0)
 				continue;
 
-			if (!pUser[partyconn].cSock.AddMessage((char*)msg, msg->Size))
+			if (!pUser[partyconn].AddMessage("PartyGridMulticast", (char *)msg, msg->Size))
 				CloseUser(partyconn);
 		}
 	}
@@ -1078,7 +1079,7 @@ void SendItem(int conn, int Type, int Slot, STRUCT_ITEM *item)
 
 	memcpy(&sm_si.item, item, sizeof(STRUCT_ITEM));
 
-	pUser[conn].cSock.AddMessage((char*)&sm_si, sizeof(MSG_SendItem));
+	pUser[conn].AddMessage(STRINGIFY(_MSG_SendItem), (char*)&sm_si, sizeof(MSG_SendItem));
 }
 
 void SendEquip(int conn, int skip)
@@ -1226,7 +1227,7 @@ void SendEtc(int conn)
 	sm.Hold = pMob[conn].extra.Hold;
 	sm.Magic = pMob[conn].MOB.Magic;
 
-	if (!pUser[conn].cSock.AddMessage((char*)&sm, sizeof(MSG_UpdateEtc)))
+	if (!pUser[conn].AddMessage(STRINGIFY(_MSG_UpdateEtc), (char*)&sm, sizeof(MSG_UpdateEtc)))
 		CloseUser(conn);
 }
 
@@ -1252,7 +1253,7 @@ void SendCargoCoin(int conn)
 
 	sm_ucc.Parm = pUser[conn].Coin;
 
-	if (!pUser[conn].cSock.AddMessage((char*)&sm_ucc, sizeof(MSG_STANDARDPARM)))
+	if (!pUser[conn].AddMessage(STRINGIFY(_MSG_UpdateCargoCoin), (char*)&sm_ucc, sizeof(MSG_STANDARDPARM)))
 		CloseUser(conn);
 }
 
@@ -1409,7 +1410,7 @@ void SendShopList(int conn, int MobIndex, int ShopType)
 	else
 		sm_sl.Tax = 0;
 
-	if (!pUser[conn].cSock.AddMessage((char*)&sm_sl, sizeof(MSG_ShopList)))
+	if (!pUser[conn].AddMessage(STRINGIFY(_MSG_ShopList), (char*)&sm_sl, sizeof(MSG_ShopList)))
 		CloseUser(conn);
 }
 
@@ -1465,7 +1466,7 @@ void SendReqParty(int conn, int Leaderconn, int PartyID)
 
 	strcpy(sm_srp.MobName, pMob[Leaderconn].MOB.MobName);
 
-	if (!pUser[conn].cSock.AddMessage((char*)&sm_srp, sizeof(MSG_SendReqParty)))
+	if (!pUser[conn].AddMessage(STRINGIFY(_MSG_SendReqParty), (char*)&sm_srp, sizeof(MSG_SendReqParty)))
 		CloseUser(conn);
 }
 
@@ -1501,7 +1502,7 @@ void SendAddParty(int Leaderconn, int conn, int PartyID)
 
 	strcpy(sm_cap.MobName, pMob[conn].MOB.MobName);
 
-	if (!pUser[Leaderconn].cSock.SendOneMessage((char*)&sm_cap, sizeof(MSG_CNFAddParty)))
+	if (!pUser[Leaderconn].SendOneMessage(STRINGIFY(_MSG_CNFAddParty), (char*)&sm_cap, sizeof(MSG_CNFAddParty)))
 		CloseUser(Leaderconn);
 }
 
@@ -1527,7 +1528,7 @@ void SendRemoveParty(int conn, int connExit)
 	sm_rp.Leaderconn = connExit;
 	sm_rp.unk = 0;
 
-	if (!pUser[conn].cSock.AddMessage((char*)&sm_rp, sizeof(MSG_RemoveParty)))
+	if (!pUser[conn].AddMessage(STRINGIFY(_MSG_RemoveParty), (char*)&sm_rp, sizeof(MSG_RemoveParty)))
 		CloseUser(conn);
 }
 
@@ -1554,7 +1555,7 @@ void SendCarry(int conn)
 
 	sm.Coin = pMob[conn].MOB.Coin;
 
-	if (!pUser[conn].cSock.AddMessage((char*)&sm, sizeof(MSG_UpdateCarry)))
+	if (!pUser[conn].AddMessage(STRINGIFY(_MSG_UpdateCarry), (char*)&sm, sizeof(MSG_UpdateCarry)))
 		CloseUser(conn);
 }
 
@@ -1581,7 +1582,7 @@ void SendWeather()
 
 //		if ((pMob[i].TargetX / 128) < 12 && (pMob[i].TargetY / 128) > 25)
 		{
-			if (!pUser[i].cSock.AddMessage((char*)&sm_uw, sizeof(MSG_UpdateWeather)))
+			if (!pUser[i].AddMessage(STRINGIFY(_MSG_UpdateWeather), (char*)&sm_uw, sizeof(MSG_UpdateWeather)))
 				CloseUser(i);
 		}
 	}
@@ -1615,7 +1616,7 @@ void SendSetHpMp(int conn)
 	sm_shm.ReqMp = pUser[conn].ReqMp;
 
 
-	if (!pUser[conn].cSock.AddMessage((char*)&sm_shm, sizeof(MSG_SetHpMp)))
+	if (!pUser[conn].AddMessage(STRINGIFY(_MSG_SetHpMp), (char*)&sm_shm, sizeof(MSG_SetHpMp)))
 		CloseUser(conn);
 }
 
@@ -1640,7 +1641,7 @@ void SendHpMode(int conn)
 	sm_shmd.Hp = pMob[conn].MOB.CurrentScore.Hp;
 	sm_shmd.Mode = pUser[conn].Mode;
 
-	if (!pUser[conn].cSock.AddMessage((char*)&sm_shmd, sizeof(MSG_SetHpMode)))
+	if (!pUser[conn].AddMessage(STRINGIFY(_MSG_SetHpMode), (char*)&sm_shmd, sizeof(MSG_SetHpMode)))
 		CloseUser(conn);
 }
 
@@ -1665,7 +1666,7 @@ void MapaMulticast(int tx, int ty, MSG_STANDARD *m, int bSend)
 	{
 		if (pUser[i].Mode == USER_PLAY && (pMob[i].TargetX / 128) == tx && (pMob[i].TargetY / 128) == ty)
 		{
-			pUser[i].cSock.AddMessage((char*)m, m->Size);
+            pUser[i].AddMessage("MapaMulticast", (char *)m, m->Size);
 
 			if (bSend)
 				pUser[i].cSock.SendMessageA();
@@ -1682,7 +1683,7 @@ void SendMessageArea(int x1, int y1, int x2, int y2, MSG_STANDARD *m, int bSend)
 
 		if (pMob[i].TargetX >= x1 && pMob[i].TargetY <= x2 && pMob[i].TargetY >= y1 && pMob[i].TargetY <= y2)
 		{
-			pUser[i].cSock.AddMessage((char*)m, m->Size);
+            pUser[i].AddMessage("SendMessageArea", (char *)m, m->Size);
 
 			if (bSend)
 				pUser[i].cSock.SendMessageA();
@@ -1763,7 +1764,7 @@ void SendPKInfo(int conn, int target)
 	else
 		sm.Parm = 1;
 
-	pUser[conn].cSock.AddMessage((char*)&sm, sizeof(MSG_STANDARDPARM));
+	pUser[conn].AddMessage(STRINGIFY(_MSG_PKInfo), (char*)&sm, sizeof(MSG_STANDARDPARM));
 }
 
 void SendAffect(int conn)
@@ -1813,5 +1814,5 @@ void SendAffect(int conn)
 			sm.Affect[i].Time = pMob[conn].Affect[i].Time;
 		}
 	}
-	pUser[conn].cSock.AddMessage((char*)&sm, sizeof(MSG_SendAffect));
+    pUser[conn].AddMessage(STRINGIFY(_MSG_SendAffect), (char*)&sm, sizeof(MSG_SendAffect));
 }

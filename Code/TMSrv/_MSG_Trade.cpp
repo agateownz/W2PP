@@ -244,7 +244,7 @@ void Exec_MSG_Trade(int conn, char *pMsg)
 					m->ID = OpponentID;
 					m->OpponentID = conn;
 
-					pUser[OpponentID].cSock.AddMessage((char*)m, sizeof(MSG_Trade));
+					pUser[OpponentID].AddMessage(STRINGIFY(MSG_Trade), (char*)m, sizeof(MSG_Trade));
 					return;
 				}
 
@@ -394,7 +394,7 @@ void Exec_MSG_Trade(int conn, char *pMsg)
 				m->ID = OpponentID;
 				m->OpponentID = conn;
 
-				pUser[OpponentID].cSock.AddMessage((char*)m, sizeof(MSG_Trade));
+				pUser[OpponentID].AddMessage(STRINGIFY(MSG_Trade), (char*)m, sizeof(MSG_Trade));
 				return;
 			}
 
@@ -417,7 +417,7 @@ void Exec_MSG_Trade(int conn, char *pMsg)
 
 		m->OpponentID = conn;
 
-		pUser[OpponentID].cSock.AddMessage((char*)m, sizeof(MSG_Trade));
+		pUser[OpponentID].AddMessage(STRINGIFY(MSG_Trade), (char*)m, sizeof(MSG_Trade));
 						   
 		pUser[OpponentID].Trade.MyCheck = 0;
 		pUser[OpponentID].Trade.TradeMoney = 0;

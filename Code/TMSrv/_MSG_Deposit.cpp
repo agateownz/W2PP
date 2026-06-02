@@ -41,7 +41,7 @@ void Exec_MSG_Deposit(int conn, char *pMsg)
 
 			m->ID = ESCENE_FIELD;
 
-			pUser[conn].cSock.AddMessage((char*)m, sizeof(MSG_STANDARDPARM));
+			pUser[conn].AddMessage("MSG_Deposit", (char *)m, sizeof(MSG_STANDARDPARM));
 
 			SendCargoCoin(conn);
 

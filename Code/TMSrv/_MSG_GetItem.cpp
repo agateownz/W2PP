@@ -67,7 +67,7 @@ void Exec_MSG_GetItem(int conn, char *pMsg)
 		sm_deci.ID = ESCENE_FIELD;
 		sm_deci.ItemID = m->ItemID;
 		sm_deci.unk = 0;
-		pUser[conn].cSock.AddMessage((char*)&sm_deci, sizeof(MSG_DecayItem));
+        pUser[conn].AddMessage(STRINGIFY(MSG_DecayItem), (char*)&sm_deci, sizeof(MSG_DecayItem));
 		return;
 	}
 
@@ -156,14 +156,14 @@ void Exec_MSG_GetItem(int conn, char *pMsg)
 
 	if (itemX < 0 || itemX >= MAX_GRIDX || itemY <= 0 || itemY >= MAX_GRIDY)
 	{
-		pUser[conn].cSock.AddMessage((char*)&sm_deci, sizeof(MSG_DecayItem));
+        pUser[conn].AddMessage(STRINGIFY(MSG_DecayItem), (char *)&sm_deci, sizeof(MSG_DecayItem));
 		pItem[itemID].Mode = 0;
 		return;
 	}
 
 	if (pItemGrid[itemY][itemX] != itemID)
 	{
-		pUser[conn].cSock.AddMessage((char*)&sm_deci, sizeof(MSG_DecayItem));
+        pUser[conn].AddMessage(STRINGIFY(MSG_DecayItem), (char *)&sm_deci, sizeof(MSG_DecayItem));
 	
 		if (!pItemGrid[itemY][itemX])
 			pItemGrid[itemY][itemX] = itemID;
@@ -173,7 +173,7 @@ void Exec_MSG_GetItem(int conn, char *pMsg)
 
 	if (itemX != m->GridX || itemY != m->GridY)
 	{
-		pUser[conn].cSock.AddMessage((char*)&sm_deci, sizeof(MSG_DecayItem));
+		pUser[conn].AddMessage(STRINGIFY(MSG_DecayItem), (char*)&sm_deci, sizeof(MSG_DecayItem));
 		return;
 	}
 
@@ -196,7 +196,7 @@ void Exec_MSG_GetItem(int conn, char *pMsg)
 		}
 		pMob[conn].MOB.Coin += coin1;
 
-		pUser[conn].cSock.AddMessage((char*)&sm_deci, sizeof(MSG_DecayItem));
+		pUser[conn].AddMessage(STRINGIFY(MSG_DecayItem), (char*)&sm_deci, sizeof(MSG_DecayItem));
 
 		BASE_ClearItem(ditem);
 	}
@@ -241,7 +241,7 @@ void Exec_MSG_GetItem(int conn, char *pMsg)
 	cnfGet.DestPos = m->DestPos;
 	cnfGet.DestType = m->DestType;
 
-	pUser[conn].cSock.AddMessage((char*)&cnfGet, sizeof(MSG_CNFGetItem));
+	pUser[conn].AddMessage(STRINGIFY(MSG_CNFGetItem), (char*)&cnfGet, sizeof(MSG_CNFGetItem));
 
 	GridMulticast(itemX, itemY, (MSG_STANDARD*)&sm_deci, 0);
 

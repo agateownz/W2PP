@@ -43,7 +43,7 @@ void Exec_MSG_ReqRanking(int conn, char *pMsg)
 			m->Parm1 = conn;
 			m->ID = tDuel;
 									
-			pUser[tDuel].cSock.AddMessage((char*)m, sizeof(MSG_STANDARDPARM2));
+			pUser[tDuel].AddMessage("MSG_Duel (unknown?)", (char *)m, sizeof(MSG_STANDARDPARM2));
 			return;
 		}
 	}

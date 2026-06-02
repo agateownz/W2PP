@@ -1170,7 +1170,7 @@ void Exec_MSG_MessageWhisper(int conn, char *pMsg)
 					continue;
 
 				m->ID = conn;
-				pUser[i].cSock.AddMessage((char*)m, sizeof(MSG_MessageWhisper));
+                pUser[i].AddMessage(STRINGIFY(MSG_MessageWhisper), (char*)m, sizeof(MSG_MessageWhisper));
 			}
 
 			char guildname[256];
@@ -1197,8 +1197,10 @@ void Exec_MSG_MessageWhisper(int conn, char *pMsg)
 			if (pUser[myleader].Mode != USER_PLAY)
 				return;
 
-			if (myleader != conn)
-				pUser[myleader].cSock.AddMessage((char*)m, sizeof(MSG_MessageWhisper));
+			if (myleader != conn) {
+				pUser[myleader].AddMessage(STRINGIFY(MSG_MessageWhisper), (char *)m, sizeof(MSG_MessageWhisper));
+            }
+				
 
 			for (int i = 0; i < MAX_PARTY; i++)
 			{
@@ -1217,7 +1219,7 @@ void Exec_MSG_MessageWhisper(int conn, char *pMsg)
 					continue;
 
 				m->ID = conn;
-				pUser[partyconn].cSock.AddMessage((char*)m, sizeof(MSG_MessageWhisper));
+				pUser[partyconn].AddMessage(STRINGIFY(MSG_MessageWhisper), (char*)m, sizeof(MSG_MessageWhisper));
 			}
 
 			sprintf(temp, "chat_party, %s : %s", m->MobName, m->String);
@@ -1367,7 +1369,7 @@ void Exec_MSG_MessageWhisper(int conn, char *pMsg)
 		memcpy(m->MobName, pMob[conn].MOB.MobName, NAME_LENGTH);
 		memcpy(pUser[target].LastChat, m->MobName, NAME_LENGTH);
 
-		pUser[target].cSock.AddMessage((char*)m, sizeof(MSG_MessageWhisper));
+		pUser[target].AddMessage(STRINGIFY(MSG_MessageWhisper), (char*)m, sizeof(MSG_MessageWhisper));
 
 		sprintf(temp, "chat_sms,%s %s : %s", pMob[conn].MOB.MobName, m->MobName, m->String);
 		ChatLog(temp, pUser[conn].AccountName, pUser[conn].IP);

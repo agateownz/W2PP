@@ -41,7 +41,7 @@ void Exec_MSG_Withdraw(int conn, char *pMsg)
 
 			m->ID = 30000;
 
-			pUser[conn].cSock.AddMessage((char*)m, sizeof(MSG_STANDARDPARM));
+			pUser[conn].AddMessage("MSG_Withdraw", (char *)m, sizeof(MSG_STANDARDPARM));
 			SendCargoCoin(conn);
 
 			sprintf(temp, "etc,retirada do bau V:%d R:%d", coin, pUser[conn].Coin);

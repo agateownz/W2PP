@@ -1310,7 +1310,7 @@ void ProcessDBMessage(char *Msg)
 
 			m->ID = ESCENE_FIELD;
 
-			pUser[conn].cSock.AddMessage((char*)m, sizeof(MSG_STANDARDPARM));
+			pUser[conn].AddMessage(STRINGIFY(_MSG_DBServerSend1), (char*)m, sizeof(MSG_STANDARDPARM));
 			pUser[conn].cSock.SendMessageA();
 		} break;
 #pragma endregion

@@ -16,6 +16,16 @@ struct FixtureHeader {
 };
 #pragma pack(pop)
 
+static const char* toString(PacketDirection dir) {
+  switch (dir) {
+    case SERVER2CLIENT:
+      return "Server2Client";
+    case CLIENT2SERVER:
+      return "Client2Server";
+    default:
+      return "Unknown";
+  }
+}
 
 // --- low-level: append a raw hex byte run ---
 static void WriteHex(FILE* f, const void* data, size_t len) {
@@ -58,8 +68,8 @@ static void WriteSourceRef(FILE* f, const std::source_location loc) {
   WriteJsonEscaped(f, ss.str().c_str());
 }
 
-void DumpPacket(const char* name, const void* packet,
-                size_t len, const char* description,
+void DumpPacket(const char* name, const void* packet, size_t len, PacketDirection direction,
+                const char* description,
                 const std::source_location loc) {
   const FixtureHeader* h = (const FixtureHeader*)packet;
   FILE* f = fopen(g_fixturePath, "ab");
@@ -72,8 +82,8 @@ void DumpPacket(const char* name, const void* packet,
   WriteJsonEscaped(f, description);
   fprintf(f,
           "\",\"meta\":{\"opcode\":%u,\"opcodeHex\":\"0x%04x\","
-          "\"encrypted\":false,\"endian\":\"little\"},",
-          (unsigned)h->Type, (unsigned)h->Type);
+          "\"encrypted\":false,\"endian\":\"little\",\"direction\":\"%s\"},",
+          (unsigned)h->Type, (unsigned)h->Type, toString(direction));
   fprintf(f,
           "\"header\":{\"size\":%u,\"keyWord\":%u,\"checkSum\":%u,"
           "\"type\":%u,\"id\":%u,\"clientTick\":%u},",

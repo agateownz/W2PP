@@ -168,7 +168,7 @@ void Exec_MSG_Action(int conn, char *pMsg)
 			sm_action.Type = _MSG_Action3;
 			sm_action.Speed = 6;
 
-			pUser[conn].cSock.SendOneMessage((char*)&sm_action, sizeof(MSG_Action));
+			pUser[conn].SendOneMessage(STRINGIFY(MSG_Action), (char*)&sm_action, sizeof(MSG_Action));
 		}
 		AddCrackError(conn, 1, 5);
 		return;
@@ -269,13 +269,13 @@ void Exec_MSG_Action(int conn, char *pMsg)
 
 				m->Effect = 0;
 
-				pUser[conn].cSock.SendOneMessage((char*)m, sizeof(m));
+				pUser[conn].SendOneMessage(STRINGIFY(_MSG_Action), (char *) m, sizeof(m));
 				return;
 			}
 			m->TargetX = destx;
 			m->TargetY = desty;
 
-			pUser[conn].cSock.AddMessage((char*)m, sizeof(m));
+			pUser[conn].AddMessage(STRINGIFY(_MSG_Action), (const char*)m, sizeof(m));
 		}
 
 		memcpy(pMob[conn].Route, m->Route, MAX_ROUTE);
@@ -284,7 +284,7 @@ void Exec_MSG_Action(int conn, char *pMsg)
 			
 		if (m->Type == _MSG_Action3)
 		{
-			pUser[conn].cSock.SendOneMessage((char*)m, sizeof(MSG_Action));
+            pUser[conn].SendOneMessage(STRINGIFY(_MSG_Action), (char *) m, sizeof(MSG_Action));
 			SendSetHpMp(conn);
 		}
 
