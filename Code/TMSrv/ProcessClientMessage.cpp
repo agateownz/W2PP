@@ -69,7 +69,7 @@ void  ProcessClientMessage(int conn, char *pMsg, BOOL isServer)
 	switch(std->Type)
 	{
 	case _MSG_AccountLogin:
-        W2::DumpPacket(STRINGIFY(_MSG_AccountLogin), pMsg, std->Size, W2::PacketDirection::CLIENT2SERVER, "Accont Login");
+        W2::DumpPacket(STRINGIFY(_MSG_AccountLogin), pMsg, std->Size, W2::PacketDirection::CLIENT2SERVER, "Account Login");
 		Exec_MSG_AccountLogin(conn, pMsg);
 		break;
 
