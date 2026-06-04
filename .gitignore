@@ -248,3 +248,8 @@ ModelManifest.xml
 graphify-out/manifest.json
 graphify-out/cost.json
 graphify-out/cache/
+
+# openspec
+openspec/
+
+fixtures.ndjson
