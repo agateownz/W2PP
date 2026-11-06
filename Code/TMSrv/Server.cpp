@@ -3506,36 +3506,36 @@ BOOL WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 	SetCastleDoor(1);
 
-	char name[255];
+	char name[64] = { 0, };
 
-	FILE* fp = fopen("localip.txt", "rt");
+	if (!BASE_ReadLocalIPAddress(LocalIP, name, sizeof(name)))
+		Log("warn, localip.txt not found or invalid. Using 127.0.0.1", "-system", 0);
 
-	if (fp)
+	// Optional explicit DB address: dbserver.txt ("<ip> [port]"). It is required
+	// when the bind address (for example 0.0.0.0) is not in serverlist.txt.
+	char dbAddress[64] = { 0, };
+	int dbPort = 0;
+
+	FILE* fp = fopen("dbserver.txt", "rt");
+
+	if (fp != NULL)
 	{
-		fscanf(fp, "%s", name);
+		fscanf(fp, "%63s %d", dbAddress, &dbPort);
 
 		fclose(fp);
 	}
-	else
-		MessageBox(hWndMain, "Não foi possivel encontrar o arquivo LocalIP.txt", "Erro ao iniciar", NULL);
 
-	int r1 = 0, r2 = 0, r3 = 0, r4 = 0;
-
-	sscanf(name, "%d.%d.%d.%d", &r1, &r2, &r3, &r4);
-
-	LocalIP[0] = r1;
-	LocalIP[1] = r2;
-	LocalIP[2] = r3;
-	LocalIP[3] = r4;
 	DBServerAddress[0] = 0;
+	DBServerPort = DB_PORT;
 
+	// Look up this server in the list using the address from localip.txt.
 	for (int i = 0; i < MAX_SERVERGROUP; i++)
 	{
 		for (int j = 1; j < MAX_SERVERNUMBER; j++)
 		{
-			if (!strcmp(g_pServerList[i][j], name))
+			if (g_pServerList[i][j][0] != 0 && !strcmp(g_pServerList[i][j], name))
 			{
-				strcpy(DBServerAddress, g_pServerList[i][0]);
+				strncpy(DBServerAddress, g_pServerList[i][0], sizeof(DBServerAddress) - 1);
 
 				ServerGroup = i;
 				ServerIndex = j - 1;
@@ -3544,22 +3544,45 @@ BOOL WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 			}
 		}
 
-		if (DBServerAddress[0] == 0)
-			continue;
+		if (ServerGroup != -1)
+			break;
+	}
+
+	if (dbAddress[0] != 0)
+	{
+		// An explicit dbserver.txt wins over the server list.
+		strncpy(DBServerAddress, dbAddress, sizeof(DBServerAddress) - 1);
+
+		if (dbPort > 0 && dbPort < 65536)
+			DBServerPort = dbPort;
+	}
+
+	if (DBServerAddress[0] == 0 && (BASE_IsLoopbackAddress(LocalIP) || BASE_IsAnyAddress(LocalIP)))
+	{
+		// Local/all-interface bind without a matching server list entry.
+		if (BASE_IsLoopbackAddress(LocalIP))
+			strcpy(DBServerAddress, "127.0.0.1");
+		else
+			strncpy(DBServerAddress, g_pServerList[0][0], sizeof(DBServerAddress) - 1);
+
+		Log("warn, localip.txt not found in serverlist.txt. Using fallback DB address", "-system", 0);
 	}
 
 	if (DBServerAddress[0] == 0)
 	{
-		MessageBox(hWndMain, "Não foi possivel pegar o ServerGroup. LocalIP.txt / ServerList.txt", "Erro ao iniciar", MB_OK | MB_SYSTEMMODAL);
+		MessageBox(hWndMain, "Não foi possivel pegar o ServerGroup. LocalIP.txt / ServerList.txt / DBServer.txt", "Erro ao iniciar", MB_OK | MB_SYSTEMMODAL);
 
 		return TRUE;
 	}
 
-	DBServerPort = 7514;
+	if (ServerGroup == -1)
+	{
+		// The DB server sends the authoritative group/index after connecting.
+		ServerGroup = 0;
+		ServerIndex = 0;
+	}
 
-	int *pip = (int*)LocalIP;
-
-	ret = DBServerSocket.ConnectServer(DBServerAddress, 7514, *pip, WSA_READDB);
+	ret = DBServerSocket.ConnectServer(DBServerAddress, DBServerPort, INADDR_ANY, WSA_READDB);
 
 	if (ret == NULL)
 	{
@@ -3598,9 +3621,7 @@ BOOL WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 	if (BILLING > 0)
 	{
-		int *pip2 = (int*)LocalIP;
-
-		ret = BillServerSocket.ConnectBillServer(BillServerAddress, BillServerPort, *pip2, WSA_READBILL);
+		ret = BillServerSocket.ConnectBillServer(BillServerAddress, BillServerPort, INADDR_ANY, WSA_READBILL);
 
 		if (ret == NULL)
 		{
@@ -3631,7 +3652,12 @@ BOOL WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	SetTimer(hWndMain, TIMER_SEC, 500, NULL);
 	SetTimer(hWndMain, TIMER_MIN, 12000, NULL);
 
-	ListenSocket.StartListen(hWndMain, *pip, GAME_PORT, WSA_ACCEPT);
+	if (ListenSocket.StartListen(hWndMain, BASE_IPAddressToInt(LocalIP), GAME_PORT, WSA_ACCEPT) == 0)
+	{
+		Log("err, can't bind game port. Check localip.txt", "-system", 0);
+
+		return FALSE;
+	}
 
 	GuildZoneReport();
 
@@ -3822,9 +3848,7 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 
 			for (int i = 0; i < 2; i++)
 			{
-				int *pip = (int*)LocalIP;
-
-				ret = DBServerSocket.ConnectServer(DBServerAddress, DBServerPort, *pip, WSA_READDB);
+				ret = DBServerSocket.ConnectServer(DBServerAddress, DBServerPort, INADDR_ANY, WSA_READDB);
 
 				if (ret != NULL)
 					break;
@@ -3857,9 +3881,7 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 
 			for (int i = 0; i < 2; i++)
 			{
-				int *pip = (int*)LocalIP;
-
-				ret = DBServerSocket.ConnectServer(DBServerAddress, DBServerPort, *pip, WSA_READDB);
+				ret = DBServerSocket.ConnectServer(DBServerAddress, DBServerPort, INADDR_ANY, WSA_READDB);
 
 				if (ret != NULL)
 					break;

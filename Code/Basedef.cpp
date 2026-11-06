@@ -6215,6 +6215,108 @@ void BASE_InitializeGuildName()
 	fclose(fp);
 }
 
+int BASE_ParseIPAddress(const char *address, unsigned char ip[4])
+{
+	if (address == NULL || ip == NULL)
+		return FALSE;
+
+	if (_stricmp(address, "localhost") == 0)
+	{
+		ip[0] = 127;
+		ip[1] = 0;
+		ip[2] = 0;
+		ip[3] = 1;
+
+		return TRUE;
+	}
+
+	// "any", "*" and "all" expose the server on every interface (LAN/WAN).
+	if (_stricmp(address, "any") == 0 || _stricmp(address, "all") == 0 || !strcmp(address, "*"))
+	{
+		memset(ip, 0, 4);
+
+		return TRUE;
+	}
+
+	int octet[4] = { 0, 0, 0, 0 };
+	char tail = 0;
+
+	if (sscanf(address, "%d.%d.%d.%d%c", &octet[0], &octet[1], &octet[2], &octet[3], &tail) != 4)
+		return FALSE;
+
+	for (int i = 0; i < 4; i++)
+	{
+		if (octet[i] < 0 || octet[i] > 255)
+			return FALSE;
+
+		ip[i] = (unsigned char)octet[i];
+	}
+
+	return TRUE;
+}
+
+int BASE_ReadLocalIPAddress(unsigned char ip[4], char *address, int addressSize)
+{
+	const char *files[] = { "./localip.txt", "../../Common/localip.txt" };
+	
+	char token[64] = { 0, };
+	FILE *fp = NULL;
+
+	for (int i = 0; i < 2 && fp == NULL; i++)
+		fp = fopen(files[i], "rt");
+
+	int valid = FALSE;
+
+	if (fp != NULL)
+	{
+		if (fscanf(fp, "%63s", token) == 1)
+			valid = BASE_ParseIPAddress(token, ip);
+
+		fclose(fp);
+	}
+
+	// Safe default: only accept connections from the local machine.
+	if (!valid)
+	{
+		ip[0] = 127;
+		ip[1] = 0;
+		ip[2] = 0;
+		ip[3] = 1;
+	}
+
+	if (address != NULL && addressSize > 0)
+		sprintf_s(address, (size_t)addressSize, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
+
+	return valid;
+}
+
+// Converts the four octets into the same representation returned by inet_addr().
+int BASE_IPAddressToInt(const unsigned char ip[4])
+{
+	return (int)((unsigned int)ip[0]
+		| ((unsigned int)ip[1] << 8)
+		| ((unsigned int)ip[2] << 16)
+		| ((unsigned int)ip[3] << 24));
+}
+
+int BASE_IsLoopbackAddress(const unsigned char ip[4])
+{
+	return ip[0] == 127;
+}
+
+int BASE_IsAnyAddress(const unsigned char ip[4])
+{
+	return ip[0] == 0 && ip[1] == 0 && ip[2] == 0 && ip[3] == 0;
+}
+
+// Checks an inet_addr() value (network byte order stored in an unsigned int).
+int BASE_IsLoopbackIP(unsigned int ip)
+{
+	const unsigned char *cIP = (const unsigned char *)&ip;
+
+	return cIP[0] == 127;
+}
+
 int BASE_InitializeServerList()
 {
 	FILE *fp = NULL;

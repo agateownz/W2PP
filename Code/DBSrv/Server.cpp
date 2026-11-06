@@ -528,54 +528,35 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	BASE_InitializeServerList();
 
-	char name[256];
-	int i = 0;
+	char name[64] = { 0, };
 
-	struct addrinfo hints, *res, *p;
+	if (!BASE_ReadLocalIPAddress(LocalIP, name, sizeof(name)))
+		Log("warn, localip.txt not found or invalid. Using 127.0.0.1", "-system", 0);
 
-	memset(&hints, 0, sizeof(addrinfo));
-	
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
+	ServerIndex = -1;
 
-	gethostname(name, sizeof(name));
-
-	getaddrinfo(name, NULL, &hints, &res);
-
-	for (p = res; p != NULL; p = p->ai_next)
+	for (int i = 0; i < MAX_SERVERGROUP; i++)
 	{
-		if (p->ai_family != AF_INET)
-			continue;
-
-		struct sockaddr_in *ipv4 = (struct sockaddr_in *)p->ai_addr;
-
-		inet_ntop(p->ai_family, &(ipv4->sin_addr), name, sizeof(name));
-
-		for (i = 0; i < MAX_SERVERGROUP; i++)
+		if (g_pServerList[i][0][0] != 0 && !strcmp(g_pServerList[i][0], name))
 		{
-			if (!strcmp(g_pServerList[i][0], name))
-			{
-				ServerIndex = i;
+			ServerIndex = i;
 
-				sscanf(name, "%hhu.%hhu.%hhu.%hhu", &LocalIP[0], &LocalIP[1], &LocalIP[2], &LocalIP[3]);
-
-				break;
-			}
-		}
-
-		if (ServerIndex != -1)
 			break;
+		}
 	}
 
-	/*freeaddrinfo(res);
-	freeaddrinfo(p);
-	freeaddrinfo(&hints);
-	*/
+	if (ServerIndex == -1 && (BASE_IsLoopbackAddress(LocalIP) || BASE_IsAnyAddress(LocalIP)))
+	{
+		// Loopback/all-interface bind: the group is not tied to a specific
+		// address, so use the first group as a sane default.
+		ServerIndex = 0;
+
+		Log("warn, localip.txt not found in serverlist.txt. Using server group 0", "-system", 0);
+	}
+
     if(ServerIndex == -1)
     {	
-		MessageBox(hWndMain, "Can't get Server Group Index LocalIP:", "", MB_OK|MB_SYSTEMMODAL);
-		MessageBox(hWndMain, "Can't get Server Group Index TestServerIP:", g_pServerList[i][0], MB_OK | MB_SYSTEMMODAL);
+		MessageBox(hWndMain, "Can't get Server Group Index. Check localip.txt / serverlist.txt", "", MB_OK|MB_SYSTEMMODAL);
 
 	   return TRUE;
     }
@@ -583,8 +564,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	CReadFiles::ImportItem();
 	ReadTrandGuildInfo();
 
-	ListenSocket.StartListen(hWndMain, 0, DB_PORT, WSA_ACCEPT);
-	AdminSocket.StartListen(hWndMain, 0, ADMIN_PORT, WSA_ACCEPTADMIN);
+	if (ListenSocket.StartListen(hWndMain, BASE_IPAddressToInt(LocalIP), DB_PORT, WSA_ACCEPT) == 0)
+	{
+		Log("err, can't bind DB port. Check localip.txt", "-system", 0);
+
+		return FALSE;
+	}
+
+	if (AdminSocket.StartListen(hWndMain, BASE_IPAddressToInt(LocalIP), ADMIN_PORT, WSA_ACCEPTADMIN) == 0)
+	{
+		Log("err, can't bind admin port. Check localip.txt", "-system", 0);
+
+		return FALSE;
+	}
 
 	FILE *fp = fopen("redirect.txt", "rt");
 
@@ -959,13 +951,18 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 				 break;
 			 }
 
-			 TempUser.AcceptUser(AdminSocket.Sock, WSA_READADMIN);
+			 if (!TempUser.AcceptUser(AdminSocket.Sock, WSA_READADMIN))
+			 {
+				 Log("err,accept_admin accept fail", "-system", 0);
+
+				 break;
+			 }
 
 			 unsigned char *cIP = (unsigned char *)&(TempUser.IP);
 			 int User = -1;
 			 int i = 0;
 
-			 for(i = 0; i <= MAX_ADMIN; i++)
+			 for(i = 0; i < MAX_ADMIN; i++)
 			 {   
 				 if(pAdmin[i].IP == TempUser.IP) 
 				 {
@@ -994,11 +991,30 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 
 				 if(i == MAX_ADMIN)
 				 {	
-					 TempUser.cSock.CloseSocket();
+					 // Allow local admin tools (NPTool) connecting over loopback
+					 // even when Admin.txt only lists remote addresses.
+					 if(BASE_IsLoopbackIP(TempUser.IP))
+					 {
+						 for(int j = 0; j < MAX_ADMIN; j++)
+						 {
+							 if(pAdminIP[j] == 0 || pAdminIP[j] == TempUser.IP)
+							 {
+								 pAdminIP[j] = TempUser.IP;
+								 User = j;
 
-					 char temp[256];   
-					 sprintf(temp, "err, wsa_acceptadmin request accept from  %d.%d.%d.%d", cIP[0], cIP[1], cIP[2], cIP[3]);
-					 Log(temp, "-system", 0);
+								 break;
+							 }
+						 }
+					 }
+
+					 if(User == -1)
+					 {
+						 TempUser.cSock.CloseSocket();
+
+						 char temp[256];   
+						 sprintf(temp, "err, wsa_acceptadmin request accept from  %d.%d.%d.%d", cIP[0], cIP[1], cIP[2], cIP[3]);
+						 Log(temp, "-system", 0);
+					 }
 				 }
 			 }
 
@@ -1073,7 +1089,11 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 				break;
 			}
 
-			TempUser.AcceptUser(ListenSocket.Sock, WSA_READ);
+			if (!TempUser.AcceptUser(ListenSocket.Sock, WSA_READ))
+			{
+				Log("err wsa_accept accept fail", "-system", 0);
+				break;
+			}
 
 			unsigned char *cIP = (unsigned char *)&(TempUser.IP);
 
@@ -1094,27 +1114,54 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 
 			if(User == -1)
 			{ 
-				int i = 1;
+				if(BASE_IsLoopbackIP(TempUser.IP))
+				{
+					// A TM server connecting over loopback is always trusted, so
+					// local testing does not require an entry in serverlist.txt.
+					for(int i = 0; i < MAX_SERVER; i++)
+					{
+						if(pUser[i].Mode == USER_EMPTY)
+						{
+							User = i;
+							break;
+						}
+					}
 
-				for(; i < MAX_SERVERNUMBER; i++)
-				{	
-					if(!strcmp(g_pServerList[ServerIndex][i], sIP)) 
+					if(User == -1)
+					{
+						Log("err wsa_accept loopback has no empty slot", "-system", 0);
+
+						TempUser.cSock.CloseSocket();
+
 						break;
+					}
+
+					Log("sys, wsa_accept loopback TM server", "-system", 0);
 				}
+				else
+				{
+					int i = 1;
 
-				if(i == MAX_SERVERNUMBER)
-				{	
-					TempUser.cSock.CloseSocket();
+					for(; i < MAX_SERVERNUMBER; i++)
+					{	
+						if(!strcmp(g_pServerList[ServerIndex][i], sIP)) 
+							break;
+					}
 
-					char temp[256];   
-					sprintf(temp, "err wsa_accept request from  %s", sIP );
+					if(i == MAX_SERVERNUMBER)
+					{	
+						TempUser.cSock.CloseSocket();
 
-					Log(temp, "-system", 0);
+						char temp[256];   
+						sprintf(temp, "err wsa_accept request from  %s", sIP );
 
-					break;
+						Log(temp, "-system", 0);
+
+						break;
+					}
+
+					User = i - 1;
 				}
-
-				User = i - 1;
 			}
 			else if(User >= 0 && User < MAX_SERVERNUMBER)
 			{   
@@ -1147,7 +1194,8 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 				break;
 			}
 
-			if(cIP[0] == LocalIP[0] && cIP[1] == LocalIP[1] && cIP[2] == LocalIP[2])
+			// Anything listed in serverlist.txt for this group, or a loopback
+			// connection, is accepted at this point.
 			{
 				pUser[User].IP                  = TempUser.IP;
 				pUser[User].Mode                = TempUser.Mode;
@@ -1172,17 +1220,6 @@ LONG APIENTRY MainWndProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
 
 				if(TransperCharacter)
 					cFileDB.SendDBSignalParm2(User, 0, _MSG_TransperCharacter, 0, 0);
-
-				break;
-			}
-			else
-			{
-				TempUser.cSock.CloseSocket();
-
-				char temp[256];
-				sprintf(temp, "err,wsa_accept outer ethernet IP: %d.%d.%d.%d", cIP[0], cIP[1], cIP[2], cIP[3]);
-
-				Log(temp, "-system", 0);
 
 				break;
 			}

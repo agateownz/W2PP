@@ -138,9 +138,7 @@ lbl_PST1:
 			sprintf(temp, "err,start reconnect BILL %d", CurrentTime);
 			Log(temp, "-system", 0);
 
-			int *pip = (int*)LocalIP;
-
-			int ret = BillServerSocket.ConnectBillServer(BillServerAddress, BillServerPort, *pip, WSA_READBILL);
+			int ret = BillServerSocket.ConnectBillServer(BillServerAddress, BillServerPort, INADDR_ANY, WSA_READBILL);
 
 			CurrentTime = timeGetTime();
 

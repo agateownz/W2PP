@@ -1147,8 +1147,7 @@ void ProcessImple(int conn, int level, char * str)
 			fscanf(fp, "%s %d", BillServerAddress, &BillServerPort);
 			fclose(fp);
 			
-			int * pip = (int*)LocalIP;
-			int	ret = BillServerSocket.ConnectBillServer(BillServerAddress, BillServerPort, *pip, WSA_READBILL);
+			int	ret = BillServerSocket.ConnectBillServer(BillServerAddress, BillServerPort, INADDR_ANY, WSA_READBILL);
 			
 			if (ret == NULL)
 			{

@@ -36,6 +36,8 @@ Here's a list with avaliable content in actual project and what means:
 - [ ] Re-create the project, to make more organized.
 - [ ] ???
 
+See [docs/network-configuration.md](docs/network-configuration.md).
+
 ### General Public License:
 
 The code is under the [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.html) license, so you can be feel free to study and contribute.
