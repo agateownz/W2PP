@@ -42,7 +42,7 @@
 #define IDC_SHUTDOWNNP 9050
 
 
-#define		APP_VERSION				6975
+#define		APP_VERSION				7480
 
 #define		GAME_PORT				8281	  // Game server listening port, client connects to it
 #define		DB_PORT					7514      // DB server listening port, Game server connects to it
