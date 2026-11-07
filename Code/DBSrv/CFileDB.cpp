@@ -759,7 +759,11 @@ int CFileDB::ProcessMessage(char *Msg, int conn)
 
 			DBGetSelChar(&selchar, &pAccountList[Idx].File);
 
+#ifdef _ACCOUNT_SECURE_ENABLED
 			pAccountList[Idx].SecurePass = -1;
+#else // !_ACCOUNT_SECURE_ENABLED (748)
+			pAccountList[Idx].SecurePass = 1;
+#endif
 
 			MSG_DBCNFAccountLogin sm;
 
