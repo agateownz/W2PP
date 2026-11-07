@@ -1226,6 +1226,26 @@ void CMob::GetNextPos(int battle)
 	}
 }
 
+// Clans are only valid in the 0..8 range indexed by g_pClanTable. Log the offending
+// slot once instead of spamming every processing tick.
+static void LogClanOutOfRange(int index, int clan, const char *mobName)
+{
+	static unsigned char s_Warned[MAX_MOB] = { 0, };
+
+	if (index <= 0 || index >= MAX_MOB)
+		return;
+
+	if (s_Warned[index])
+		return;
+
+	s_Warned[index] = 1;
+
+	char logbuf[256];
+
+	sprintf(logbuf, "err,clan out of range index:%d clan:%d name:%.16s", index, clan, mobName);
+	Log(logbuf, "-system", 0);
+}
+
 int CMob::GetEnemyFromView(void)
 {
 	int SizeX = 9;
@@ -1259,17 +1279,34 @@ int CMob::GetEnemyFromView(void)
 			if (x == TargetX && y == TargetY)
 				continue;
 
+			// Empty/stale grid cell: never index pMob out of bounds.
+			if (tmob <= 0 || tmob >= MAX_MOB)
+				continue;
+
 			if(pMob[tmob].MOB.CurrentScore.Hp > 0 && pMob[tmob].Mode)
 			{
 				if ((tmob < MAX_USER && pMob[tmob].MOB.Rsv & 0x10))
 					continue;
 
-				if (MOB.Clan < 0 || MOB.Clan >= 9 || pMob[tmob].MOB.Clan < 0 || pMob[tmob].MOB.Clan >= 9)
+				// Signed char: cast to unsigned so negative values are also caught.
+				int myClan = (unsigned char)MOB.Clan;
+				int hisClan = (unsigned char)pMob[tmob].MOB.Clan;
+
+				// Own clan is invalid: no relation can be resolved, keep the old abort behavior.
+				if (myClan >= 9)
 				{
-					Log("err,clan out or range", MOB.MobName, 0);
+					LogClanOutOfRange((int)(this - pMob), myClan, MOB.MobName);
 					return 0;
 				}
-				if (g_pClanTable[MOB.Clan][pMob[tmob].MOB.Clan] == 0)
+
+				// Target clan is invalid: ignore this entity and keep scanning the rest of the view.
+				if (hisClan >= 9)
+				{
+					LogClanOutOfRange(tmob, hisClan, pMob[tmob].MOB.MobName);
+					continue;
+				}
+
+				if (g_pClanTable[myClan][hisClan] == 0)
 					return tmob;
 			}
 		}
